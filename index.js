@@ -52,14 +52,11 @@ app.get('/:configuration?/:resource/:type/:id/:extra?.json', (req, res) => {
 		langs.length = 0;
 	}
 
-	var count = configuration.split('|')[1].split('=')[1];
-	console.log("langs",langs,' count', count);
-	subscene(type, id, langs, count).then(promises => {
-		Promise.all(promises).then(subtitles => {
+	console.log("langs",langs);
+	subscene(type, id, langs).then(subtitles => {
 			console.log('subtitles',subtitles)
 			res.send(JSON.stringify({ subtitles: subtitles }));
 			res.end();
-		})
 	}).catch(error=>{console.error(error); res.end();})
 	
 }	

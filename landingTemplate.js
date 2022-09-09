@@ -180,17 +180,104 @@ button:active {
   background-color: rgb(255, 255, 255);
   box-shadow: 0 0.5vh 1vh rgba(0, 0, 0, 0.2);
 }
+
+button.multiselect.dropdown-toggle.btn.btn-default {
+   height: auto;
+}
+
 `;
-function landingTemplate(){
+function landingTemplate() {
 
-const manifest = require("./manifest.json");
-	
-	const stylizedTypes = manifest.types
+   const popular_langs = {
+      arabic: 'Arabic',
+      bengali: 'Bengali',
+      'brazillian-portuguese': 'Brazillian Portuguese',
+      'chinese-bg-code': 'Chinese BG code',
+      czech: 'Czech',
+      danish: 'Danish',
+      dutch: 'Dutch',
+      english: 'English',
+      farsi_persian: 'Farsi/Persian',
+      finnish: 'Finnish',
+      french: 'French',
+      german: 'German',
+      greek: 'Greek',
+      hebrew: 'Hebrew',
+      indonesian: 'Indonesian',
+      italian: 'Italian',
+      korean: 'Korean',
+      malay: 'Malay',
+      norwegian: 'Norwegian',
+      polish: 'Polish',
+      portuguese: 'Portuguese',
+      romanian: 'Romanian',
+      spanish: 'Spanish',
+      swedish: 'Swedish',
+      thai: 'Thai',
+      turkish: 'Turkish',
+      vietnamese: 'Vietnamese'
+    }
+       const other_langs = {
+         albanian: 'Albanian',
+         armenian: 'Armenian',
+         azerbaijani: 'Azerbaijani',
+         basque: 'Basque',
+         belarusian: 'Belarusian',
+         big_5_code: 'Big 5 code',
+         bosnian: 'Bosnian',
+         bulgarian: 'Bulgarian',
+         'bulgarian-english': 'Bulgarian/ English',
+         burmese: 'Burmese',
+         'cambodian/khmer': 'Cambodian/Khmer',
+         catalan: 'Catalan',
+         croatian: 'Croatian',
+         'dutch-english': 'Dutch/ English',
+         'english-german': 'English/ German',
+         esperanto: 'Esperanto',
+         estonian: 'Estonian',
+         georgian: 'Georgian',
+         greenlandic: 'Greenlandic',
+         hindi: 'Hindi',
+         hungarian: 'Hungarian',
+         'hungarian-english': 'Hungarian/ English',
+         icelandic: 'Icelandic',
+         japanese: 'Japanese',
+         kannada: 'Kannada',
+         kinyarwanda: 'Kinyarwanda',
+         kurdish: 'Kurdish',
+         latvian: 'Latvian',
+         lithuanian: 'Lithuanian',
+         macedonian: 'Macedonian',
+         malayalam: 'Malayalam',
+         manipuri: 'Manipuri',
+         mongolian: 'Mongolian',
+         nepali: 'Nepali',
+         pashto: 'Pashto',
+         punjabi: 'Punjabi',
+         russian: 'Russian',
+         serbian: 'Serbian',
+         sinhala: 'Sinhala',
+         slovak: 'Slovak',
+         slovenian: 'Slovenian',
+         somali: 'Somali',
+         sundanese: 'Sundanese',
+         swahili: 'Swahili',
+         tagalog: 'Tagalog',
+         tamil: 'Tamil',
+         telugu: 'Telugu',
+         ukrainian: 'Ukrainian',
+         urdu: 'Urdu',
+         yoruba: 'Yoruba'
+       };
+          const manifest = require("./manifest.json");
+
+   const popularHTML =Object.keys(popular_langs).map(lang=>`<option value="${lang}">${popular_langs[lang]}</option>`).join('\n');
+   const otherHTML =Object.keys(other_langs).map(lang=>`<option value="${lang}">${other_langs[lang]}</option>`).join('\n');
+   
+   const stylizedTypes = manifest.types
       .map(t => t[0].toUpperCase() + t.slice(1) + (t !== 'series' ? 's' : ''));
-	  
-	  
 
-  return `
+   return `
    <!DOCTYPE html>
    <html style="background-image: url(${manifest.background});">
 
@@ -226,18 +313,21 @@ const manifest = require("./manifest.json");
 		 
 		 <div class="separator"></div>
 		 
-		  <label class="label" for="langs">Langauges:</label>
-		 <br>
-			<input type="text" id="langs">
-		 <div class="separator"></div>
-		 
-		 <label class="label" for="count">Number of subtitles per languagee:</label>
-		 <br>
-			<input type="number" id="count" min="1" max="5" value="1">
-		 <div class="separator"></div> 
-		 
+		  <h1>Langauges:</h1>
+        <div class="separator"></div>
+       <label class="label" for="popular">Popular languages:</label>
+       <select id="popular" class="input" name="langs[]" multiple="multiple">
+       ${popularHTML}
+      </select>
+           
          <div class="separator"></div>
-
+         <label class="label" for="other">Other languages:</label>
+         <select id="other" class="input" name="langs[]" multiple="multiple">
+         ${otherHTML}
+        </select>
+             
+           <div class="separator"></div>
+        
          <a id="installLink" class="install-link" href="#">
             <button name="Install">INSTALL</button>
          </a>
@@ -254,20 +344,22 @@ const manifest = require("./manifest.json");
       </div>
 	    <script type="text/javascript">
 				$(document).ready(function() {
-			  $('#langs').change(function() {
-			  generateInstallLink()
-			});
-			$('#count').change(function() {
-			  generateInstallLink()
-			});
-			  
+               $('#popular').multiselect({ 
+                  nonSelectedText: 'No language selected',
+                  onChange: () => generateInstallLink()
+              });
+              $('#other').multiselect({ 
+               nonSelectedText: 'No language selected',
+               onChange: () => generateInstallLink()
+           });
 			  generateInstallLink();
 			  });
 			  
 			  function generateInstallLink() {
 				var data = {};
-				data['langs'] = $('#langs').val().replaceAll(' ',',');
-				data['count'] = $('#count').val();
+            var langs =  ($('#popular').val()).concat($('#other').val()).join(',') || '';
+           
+            data['langs'] = langs;
 				
 				configurationValue = Object.keys(data).map(key => key + '=' + data[key]).join('|');
 			console.log(configurationValue);
