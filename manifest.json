@@ -23,7 +23,7 @@
             "series"
     ],
     "behaviorHints": {
-        "configurable": false,
+        "configurable": true,
         "configurationRequired": false
     }
 }
