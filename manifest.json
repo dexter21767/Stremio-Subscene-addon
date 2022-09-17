@@ -10,8 +10,7 @@
     "resources": [{
             "name": "subtitles",
             "types": [
-                "movie",
-				"series"
+                "movie"
             ],
             "idPrefixes": [
                 "tt"
@@ -19,8 +18,7 @@
         }
     ],
     "types": [
-            "movie",
-            "series"
+            "movie"
     ],
     "behaviorHints": {
         "configurable": true,

@@ -29,7 +29,7 @@ async function getsubtitles(type, id, lang) {
             var subs = subtitles[lang];
             if (subs) {
                 //console.log(subs);
-                for (let i = 0; ( i < count || i< subs.length); i++) {
+                for (let i = 0; i<(  count ||  subs.length); i++) {
                     if(subs[i]){
                     promises.push(subscene.download(subs[i].path).then(data => {
                         var name = slug + '_' + lang + '_' + i;
