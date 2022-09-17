@@ -1,0 +1,310 @@
+[
+    {
+        "id": "arabic",
+        "name": "Arabic"
+    },
+    {
+        "id": "bengali",
+        "name": "Bengali"
+    },
+    {
+        "id": "brazillian-portuguese",
+        "name": "Brazillian Portuguese"
+    },
+    {
+        "id": "chinese-bg-code",
+        "name": "Chinese BG code"
+    },
+    {
+        "id": "czech",
+        "name": "Czech"
+    },
+    {
+        "id": "danish",
+        "name": "Danish"
+    },
+    {
+        "id": "dutch",
+        "name": "Dutch"
+    },
+    {
+        "id": "english",
+        "name": "English"
+    },
+    {
+        "id": "farsi_persian",
+        "name": "Farsi/Persian"
+    },
+    {
+        "id": "finnish",
+        "name": "Finnish"
+    },
+    {
+        "id": "french",
+        "name": "French"
+    },
+    {
+        "id": "german",
+        "name": "German"
+    },
+    {
+        "id": "greek",
+        "name": "Greek"
+    },
+    {
+        "id": "hebrew",
+        "name": "Hebrew"
+    },
+    {
+        "id": "indonesian",
+        "name": "Indonesian"
+    },
+    {
+        "id": "italian",
+        "name": "Italian"
+    },
+    {
+        "id": "korean",
+        "name": "Korean"
+    },
+    {
+        "id": "malay",
+        "name": "Malay"
+    },
+    {
+        "id": "norwegian",
+        "name": "Norwegian"
+    },
+    {
+        "id": "polish",
+        "name": "Polish"
+    },
+    {
+        "id": "portuguese",
+        "name": "Portuguese"
+    },
+    {
+        "id": "romanian",
+        "name": "Romanian"
+    },
+    {
+        "id": "spanish",
+        "name": "Spanish"
+    },
+    {
+        "id": "swedish",
+        "name": "Swedish"
+    },
+    {
+        "id": "thai",
+        "name": "Thai"
+    },
+    {
+        "id": "turkish",
+        "name": "Turkish"
+    },
+    {
+        "id": "vietnamese",
+        "name": "Vietnamese"
+    },
+    {
+        "id": "albanian",
+        "name": "Albanian"
+    },
+    {
+        "id": "armenian",
+        "name": "Armenian"
+    },
+    {
+        "id": "azerbaijani",
+        "name": "Azerbaijani"
+    },
+    {
+        "id": "basque",
+        "name": "Basque"
+    },
+    {
+        "id": "belarusian",
+        "name": "Belarusian"
+    },
+    {
+        "id": "big_5_code",
+        "name": "Big 5 code"
+    },
+    {
+        "id": "bosnian",
+        "name": "Bosnian"
+    },
+    {
+        "id": "bulgarian",
+        "name": "Bulgarian"
+    },
+    {
+        "id": "bulgarian-english",
+        "name": "Bulgarian/ English"
+    },
+    {
+        "id": "burmese",
+        "name": "Burmese"
+    },
+    {
+        "id": "cambodian/khmer",
+        "name": "Cambodian/Khmer"
+    },
+    {
+        "id": "catalan",
+        "name": "Catalan"
+    },
+    {
+        "id": "croatian",
+        "name": "Croatian"
+    },
+    {
+        "id": "dutch-english",
+        "name": "Dutch/ English"
+    },
+    {
+        "id": "english-german",
+        "name": "English/ German"
+    },
+    {
+        "id": "esperanto",
+        "name": "Esperanto"
+    },
+    {
+        "id": "estonian",
+        "name": "Estonian"
+    },
+    {
+        "id": "georgian",
+        "name": "Georgian"
+    },
+    {
+        "id": "greenlandic",
+        "name": "Greenlandic"
+    },
+    {
+        "id": "hindi",
+        "name": "Hindi"
+    },
+    {
+        "id": "hungarian",
+        "name": "Hungarian"
+    },
+    {
+        "id": "hungarian-english",
+        "name": "Hungarian/ English"
+    },
+    {
+        "id": "icelandic",
+        "name": "Icelandic"
+    },
+    {
+        "id": "japanese",
+        "name": "Japanese"
+    },
+    {
+        "id": "kannada",
+        "name": "Kannada"
+    },
+    {
+        "id": "kinyarwanda",
+        "name": "Kinyarwanda"
+    },
+    {
+        "id": "kurdish",
+        "name": "Kurdish"
+    },
+    {
+        "id": "latvian",
+        "name": "Latvian"
+    },
+    {
+        "id": "lithuanian",
+        "name": "Lithuanian"
+    },
+    {
+        "id": "macedonian",
+        "name": "Macedonian"
+    },
+    {
+        "id": "malayalam",
+        "name": "Malayalam"
+    },
+    {
+        "id": "manipuri",
+        "name": "Manipuri"
+    },
+    {
+        "id": "mongolian",
+        "name": "Mongolian"
+    },
+    {
+        "id": "nepali",
+        "name": "Nepali"
+    },
+    {
+        "id": "pashto",
+        "name": "Pashto"
+    },
+    {
+        "id": "punjabi",
+        "name": "Punjabi"
+    },
+    {
+        "id": "russian",
+        "name": "Russian"
+    },
+    {
+        "id": "serbian",
+        "name": "Serbian"
+    },
+    {
+        "id": "sinhala",
+        "name": "Sinhala"
+    },
+    {
+        "id": "slovak",
+        "name": "Slovak"
+    },
+    {
+        "id": "slovenian",
+        "name": "Slovenian"
+    },
+    {
+        "id": "somali",
+        "name": "Somali"
+    },
+    {
+        "id": "sundanese",
+        "name": "Sundanese"
+    },
+    {
+        "id": "swahili",
+        "name": "Swahili"
+    },
+    {
+        "id": "tagalog",
+        "name": "Tagalog"
+    },
+    {
+        "id": "tamil",
+        "name": "Tamil"
+    },
+    {
+        "id": "telugu",
+        "name": "Telugu"
+    },
+    {
+        "id": "ukrainian",
+        "name": "Ukrainian"
+    },
+    {
+        "id": "urdu",
+        "name": "Urdu"
+    },
+    {
+        "id": "yoruba",
+        "name": "Yoruba"
+    }
+]

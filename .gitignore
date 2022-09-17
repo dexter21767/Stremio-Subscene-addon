@@ -5,3 +5,5 @@
 /node_modules
 /beamup.json
 /test.js
+/package-lock.json
+/landingTemplate.js

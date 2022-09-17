@@ -216,64 +216,67 @@ function landingTemplate() {
       thai: 'Thai',
       turkish: 'Turkish',
       vietnamese: 'Vietnamese'
-    }
-       const other_langs = {
-         albanian: 'Albanian',
-         armenian: 'Armenian',
-         azerbaijani: 'Azerbaijani',
-         basque: 'Basque',
-         belarusian: 'Belarusian',
-         big_5_code: 'Big 5 code',
-         bosnian: 'Bosnian',
-         bulgarian: 'Bulgarian',
-         'bulgarian-english': 'Bulgarian/ English',
-         burmese: 'Burmese',
-         'cambodian/khmer': 'Cambodian/Khmer',
-         catalan: 'Catalan',
-         croatian: 'Croatian',
-         'dutch-english': 'Dutch/ English',
-         'english-german': 'English/ German',
-         esperanto: 'Esperanto',
-         estonian: 'Estonian',
-         georgian: 'Georgian',
-         greenlandic: 'Greenlandic',
-         hindi: 'Hindi',
-         hungarian: 'Hungarian',
-         'hungarian-english': 'Hungarian/ English',
-         icelandic: 'Icelandic',
-         japanese: 'Japanese',
-         kannada: 'Kannada',
-         kinyarwanda: 'Kinyarwanda',
-         kurdish: 'Kurdish',
-         latvian: 'Latvian',
-         lithuanian: 'Lithuanian',
-         macedonian: 'Macedonian',
-         malayalam: 'Malayalam',
-         manipuri: 'Manipuri',
-         mongolian: 'Mongolian',
-         nepali: 'Nepali',
-         pashto: 'Pashto',
-         punjabi: 'Punjabi',
-         russian: 'Russian',
-         serbian: 'Serbian',
-         sinhala: 'Sinhala',
-         slovak: 'Slovak',
-         slovenian: 'Slovenian',
-         somali: 'Somali',
-         sundanese: 'Sundanese',
-         swahili: 'Swahili',
-         tagalog: 'Tagalog',
-         tamil: 'Tamil',
-         telugu: 'Telugu',
-         ukrainian: 'Ukrainian',
-         urdu: 'Urdu',
-         yoruba: 'Yoruba'
-       };
-          const manifest = require("./manifest.json");
+   }
+   const other_langs = {
+      albanian: 'Albanian',
+      armenian: 'Armenian',
+      azerbaijani: 'Azerbaijani',
+      basque: 'Basque',
+      belarusian: 'Belarusian',
+      big_5_code: 'Big 5 code',
+      bosnian: 'Bosnian',
+      bulgarian: 'Bulgarian',
+      'bulgarian-english': 'Bulgarian/ English',
+      burmese: 'Burmese',
+      'cambodian/khmer': 'Cambodian/Khmer',
+      catalan: 'Catalan',
+      croatian: 'Croatian',
+      'dutch-english': 'Dutch/ English',
+      'english-german': 'English/ German',
+      esperanto: 'Esperanto',
+      estonian: 'Estonian',
+      georgian: 'Georgian',
+      greenlandic: 'Greenlandic',
+      hindi: 'Hindi',
+      hungarian: 'Hungarian',
+      'hungarian-english': 'Hungarian/ English',
+      icelandic: 'Icelandic',
+      japanese: 'Japanese',
+      kannada: 'Kannada',
+      kinyarwanda: 'Kinyarwanda',
+      kurdish: 'Kurdish',
+      latvian: 'Latvian',
+      lithuanian: 'Lithuanian',
+      macedonian: 'Macedonian',
+      malayalam: 'Malayalam',
+      manipuri: 'Manipuri',
+      mongolian: 'Mongolian',
+      nepali: 'Nepali',
+      pashto: 'Pashto',
+      punjabi: 'Punjabi',
+      russian: 'Russian',
+      serbian: 'Serbian',
+      sinhala: 'Sinhala',
+      slovak: 'Slovak',
+      slovenian: 'Slovenian',
+      somali: 'Somali',
+      sundanese: 'Sundanese',
+      swahili: 'Swahili',
+      tagalog: 'Tagalog',
+      tamil: 'Tamil',
+      telugu: 'Telugu',
+      ukrainian: 'Ukrainian',
+      urdu: 'Urdu',
+      yoruba: 'Yoruba'
+   };
 
-   const popularHTML =Object.keys(popular_langs).map(lang=>`<option value="${lang}">${popular_langs[lang]}</option>`).join('\n');
-   const otherHTML =Object.keys(other_langs).map(lang=>`<option value="${lang}">${other_langs[lang]}</option>`).join('\n');
-   
+   const langs = popular_langs + other_langs;
+
+   const manifest = require("./manifest.json");
+
+   const popularHTML = Object.keys(popular_langs).map(lang => `<option value="${lang}">${popular_langs[lang]}</option>`).join('\n');
+   const otherHTML = Object.keys(other_langs).map(lang => `<option value="${lang}">${other_langs[lang]}</option>`).join('\n');
+
    const stylizedTypes = manifest.types
       .map(t => t[0].toUpperCase() + t.slice(1) + (t !== 'series' ? 's' : ''));
 

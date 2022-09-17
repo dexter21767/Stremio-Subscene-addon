@@ -1,9 +1,10 @@
 {
-	"name": "stremio-addon-subscene",
+	"name": "stremio-subscene",
 	"version": "0.0.1",
 	"description": "Addon for getting subtitles from Subscene, by Dexter21767",
 	"scripts": {
-		"start": "node server.js"
+		"start": "node server.js",
+		"dev": "nodemon server.js"
 	},
 	"dependencies": {
 		"acebase": "^1.24.0",
@@ -17,6 +18,10 @@
 		"node-subscene-api": "^1.0.0",
 		"path": "^0.12.7",
 		"slugify": "^1.6.5",
-		"stremio-addon-sdk": "latest"
+		"stremio-addon-sdk": "latest",
+		"util": "^0.12.4"
+	},
+	"devDependencies": {
+		"nodemon": "latest"
 	}
 }

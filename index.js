@@ -2,13 +2,22 @@
 const express = require('express');
 const app = express();
 const cors = require('cors');
+const path = require('path');
 
-const subscene = require('./subscene');
-var manifest = require("./manifest.json");
+const { getsubtitles, clean } = require('./subscene');
+const manifest = require("./manifest.json");
 
-const landingTemplate = require('./landingTemplate');
+//const landingTemplate = require('./landingTemplate');
+const languages = require('./languages.json');
+
+
+app.set('trust proxy', true)
+
+app.use('/configure', express.static(path.join(__dirname, 'vue', 'dist')));
+app.use('/assets', express.static(path.join(__dirname, 'vue', 'dist', 'assets')));
 
 app.use(express.static('data'))
+
 app.use(cors())
 
 app.get('/', (_, res) => {
@@ -17,20 +26,29 @@ app.get('/', (_, res) => {
 });
 
 app.get('/:configuration?/configure', (req, res) => {
+	res.setHeader('Cache-Control', 'max-age=86400,staleRevalidate=stale-while-revalidate, staleError=stale-if-error, public');
+	res.setHeader('content-type', 'text/html');
+	res.sendFile(path.join(__dirname, 'vue', 'dist', 'index.html'));
+});
+/*
+app.get('/:configuration?/configure', (_, res) => {
 	res.setHeader('content-type', 'text/html');
 	res.end(landingTemplate());
 });
+*/
 
-app.get('/manifest.json', (req, res) => {
+app.get('/manifest.json', (_, res) => {
 	res.setHeader('Cache-Control', 'max-age=86400, public');
 	res.setHeader('Content-Type', 'application/json');
+	manifest.behaviorHints.configurationRequired = true;
 	res.send(manifest);
 	res.end();
 });
 
-app.get('/:configuration?/manifest.json', (req, res) => {
+app.get('/:configuration?/manifest.json', (_, res) => {
 	res.setHeader('Cache-Control', 'max-age=86400, public');
 	res.setHeader('Content-Type', 'application/json');
+	manifest.behaviorHints.configurationRequired = false;
 	res.send(manifest);
 	res.end();
 });
@@ -44,22 +62,21 @@ app.get('/:configuration?/:resource/:type/:id/:extra?.json', (req, res) => {
 	const { configuration, resource, type, id } = req.params;
 
 	//const extra = req.params.extra ? req.parse(req.url.split('/').pop().slice(0, -5)) : {}
-	if(configuration!== "subtitles"){
-	var langs = configuration.split('|')[0].split('=')
-	if (langs.length > 1 && langs[1].length > 1) {
-		langs = langs[1].split(',');
-	} else {
-		langs.length = 0;
-	}
-
-	console.log("langs",langs);
-	subscene(type, id, langs).then(subtitles => {
-			console.log('subtitles',subtitles)
-			res.send(JSON.stringify({ subtitles: subtitles }));
+	if (configuration !== "subtitles" && configuration) {
+		
+		//let lang = configuration.split('|')[0].split('=')[1]
+		let lang = configuration;
+		console.log("Language", lang); 
+		if (languages.some(e => e.id === lang)) {
+			getsubtitles(type, id, lang).then(subtitles => {
+				//console.log('subtitles', subtitles)
+				res.send(JSON.stringify({ subtitles: subtitles }));
+				res.end();
+			}).catch(error => { console.error(error); res.end(); })
+		} else {
 			res.end();
-	}).catch(error=>{console.error(error); res.end();})
-	
-}	
+		}
+	}
 })
 
-module.exports = app
+module.exports = { app, clean }
