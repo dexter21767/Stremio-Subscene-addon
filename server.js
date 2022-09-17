@@ -21,4 +21,4 @@ app.listen((process.env.PORT || 63355), function () {
 
 
 
-//publishToCentral("https://2ecbbd610840-subscene.baby-beamup.club/manifest.json")
+publishToCentral("https://2ecbbd610840-subscene.baby-beamup.club/manifest.json")
