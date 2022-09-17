@@ -196,11 +196,13 @@
 
 
                     <div class="mt-5 flex flex-col">
-                        <p class="text-center text-gray-400">This addon was created by<br />
+                        <p class="text-center text-gray-400">This addon was created by:
                             <a href="https://github.com/dexter21767" target="_blank"
-                                class="text-purple-700">dexter21767</a>
-                            and
-                            <a href="https://github.com/rleroi" target="_blank" class="text-purple-700">rab1t</a>
+                                class="text-purple-700">dexter21767</a><br />
+                            UI by:
+                            <a href="https://github.com/rleroi" target="_blank" class="text-purple-700">rab1t</a><br />
+                            Background by:
+                            <a href="https://github.com/alesinka" target="_blank" class="text-purple-700">Alesinka</a>
                             .
                         </p>
                     </div>
