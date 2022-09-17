@@ -20,6 +20,15 @@ app.use(express.static('data'))
 
 app.use(cors())
 
+app.get('/CleanCache', (_, res) => {
+	clean();
+	res.setHeader('Cache-Control', 'max-age=86400,staleRevalidate=stale-while-revalidate, staleError=stale-if-error, public');
+	res.setHeader('content-type', 'text/html');
+	res.send('Cache has be cleared');
+	res.end();
+});
+
+
 app.get('/', (_, res) => {
 	res.redirect('/configure')
 	res.end();
