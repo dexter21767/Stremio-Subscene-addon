@@ -39,7 +39,7 @@ async function getsubtitles(type, id, lang) {
                         var sub = {
                             lang: lang,
                             id: name,
-                            url: "https://2ecbbd610840-subscene.baby-beamup.club/data/" + encodeURI(name)
+                            url: "https://2ecbbd610840-subscene.baby-beamup.club/" + encodeURI(name)
                         };
                         return sub;
                     }).catch(err => console.error(err))
