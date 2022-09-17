@@ -16,7 +16,7 @@ async function getsubtitles(type, id, lang) {
     const promises = [];
     var meta = await cinemeta(type, id)
     var slug = meta.slug;
-    var moviePath = `/subtitles/${slug}/${lang}`;
+    var moviePath = `/subtitles/${slug}`;
     console.log(moviePath);
     var cachID = id + '_' + lang
     var cached = Cache.get(cachID);
@@ -30,6 +30,7 @@ async function getsubtitles(type, id, lang) {
             if (subs) {
                 //console.log(subs);
                 for (let c = 0; c < (count || subs.length); c++) {
+                    if(subs[c]){
                     promises.push(subscene.download(subs[c].path).then(data => {
                         var name = slug + '_' + lang + '_' + c;
                         var subpath = path.join(__dirname, directory, name);
@@ -44,6 +45,7 @@ async function getsubtitles(type, id, lang) {
                         return sub;
                     }).catch(err => console.error(err))
                     );
+                }
                 }
             }
 
