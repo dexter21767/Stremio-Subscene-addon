@@ -54,12 +54,14 @@ async function getsubtitles(type, id, lang) {
             console.log(promises);
             console.log("Cache keys", Cache.keys());
 
-            let subs = Promise.all(promises);
-            subs = subs.filter( Boolean );
-            let cached = Cache.set(cachID, subs);
-            console.log("cached", cached)
-
-            return subs;
+            return Promise.all(promises).then(subs=>{
+                console.log(subs)
+                subs = subs.filter( Boolean );
+                let cached = Cache.set(cachID, subs);
+                console.log("cached", cached)
+    
+                return subs;});
+            
         }).catch(err => console.error(err))
     }
 }
