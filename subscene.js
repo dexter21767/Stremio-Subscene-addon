@@ -55,6 +55,7 @@ async function getsubtitles(type, id, lang) {
             console.log("Cache keys", Cache.keys());
 
             let subs = Promise.all(promises);
+            subs = subs.filter( Boolean );
             let cached = Cache.set(cachID, subs);
             console.log("cached", cached)
 
