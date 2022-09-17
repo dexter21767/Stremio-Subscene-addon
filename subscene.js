@@ -29,10 +29,10 @@ async function getsubtitles(type, id, lang) {
             var subs = subtitles[lang];
             if (subs) {
                 //console.log(subs);
-                for (let c = 0; c < (count || subs.length); c++) {
-                    if(subs[c]){
-                    promises.push(subscene.download(subs[c].path).then(data => {
-                        var name = slug + '_' + lang + '_' + c;
+                for (let i = 0; ( i < count || i< subs.length); i++) {
+                    if(subs[i]){
+                    promises.push(subscene.download(subs[i].path).then(data => {
+                        var name = slug + '_' + lang + '_' + i;
                         var subpath = path.join(__dirname, directory, name);
                         fs.writeFile(subpath, data[0].file.toString(), function (err) {
                             if (err) { console.log(err); }
