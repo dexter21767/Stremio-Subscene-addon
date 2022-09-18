@@ -1,5 +1,5 @@
 const cinemeta = require('./lib/cinemeta');
-const subscene = require("node-subscene-api")
+const subscene = require('node-subscene-api')
 const config = require('./config');
 require('dotenv').config();
 
