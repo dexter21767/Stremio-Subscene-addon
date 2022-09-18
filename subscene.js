@@ -1,22 +1,16 @@
 const cinemeta = require('./lib/cinemeta');
 const subscene = require("node-subscene-api")
-const fs = require('fs');
-const path = require('path');
-const util = require('util');
-const readdir = util.promisify(fs.readdir);
-const unlink = util.promisify(fs.unlink);
-const directory = 'data';
+const config = require('./config');
+require('dotenv').config();
 
 const NodeCache = require("node-cache");
 const Cache = new NodeCache();
-
 const count = 5;
 
 async function getsubtitles(type, id, lang) {
-    const promises = [];
     var meta = await cinemeta(type, id)
     var slug = meta.slug;
-    var moviePath = `/subtitles/${slug}`;
+    var moviePath = `/subtitles/${slug}/`;
     console.log(moviePath);
     var cachID = id + '_' + lang
     var cached = Cache.get(cachID);
@@ -26,61 +20,37 @@ async function getsubtitles(type, id, lang) {
     } else {
         return subscene.getSubtitles(moviePath).then(subtitles => {
             //console.log(subtitles)
-            var subs = subtitles[lang];
-            if (subs) {
-                //console.log(subs);
-                for (let i = 0; i<(  count ||  subs.length); i++) {
-                    if(subs[i]){
-                    promises.push(subscene.download(subs[i].path).then(data => {
-                        var name = slug + '_' + lang + '_' + i;
-                        var subpath = path.join(__dirname, directory, name);
-                        fs.writeFile(subpath, data[0].file.toString(), function (err) {
-                            if (err) { console.log(err); }
-                        });
-                        var sub = {
-                            lang: lang,
+            const subs = [];
+            if (subtitles[lang]) {
+            subtitles = subtitles[lang];
+                console.log(subtitles);
+                for (let i = 0; i < (count || subtitles.length); i++) {
+                    if (subtitles[i]) {
+                        let name = slug + '_' + lang + '_' + i;
+                        let path = subtitles[i].path
+                        subs.push({
+                            lang: lang, 
                             id: name,
-                            url: "https://2ecbbd610840-subscene.baby-beamup.club/" + encodeURI(name)
-                        };
-                        return sub;
-                    }).catch(err => console.error(err))
-                    );
+                            url: `http://127.0.0.1:11470/subtitles.vtt?from=${config.local}${subtitles[i].path}.zip`
+                        });
+                    }
                 }
-                }
-            }
-
-            return promises;
-        }).then(promises => {
-            console.log(promises);
+            console.log('subs',subs);
             console.log("Cache keys", Cache.keys());
-
-            return Promise.all(promises).then(subs=>{
-                console.log(subs)
-                subs = subs.filter( Boolean );
-                let cached = Cache.set(cachID, subs);
-                console.log("cached", cached)
-    
-                return subs;});
-            
+            //subs = subs.filter(Boolean);
+            let cached = Cache.set(cachID, subs);
+            console.log("cached", cached)
+            return subs;
+            }
         }).catch(err => console.error(err))
     }
 }
 
-async function clean() {
-    try {
-        console.log('Clearing cache...',Cache.getStats())
-        Cache.flushAll();
-        console.log('Cache cleared',Cache.getStats())
-
-        console.log('Deleting old subtitles...')
-        const files = await readdir(directory);
-        const unlinkPromises = files.map(filename => unlink(`${directory}/${filename}`));
-        return Promise.all(unlinkPromises).then(promise=>{console.log('Old subtitles deleted successfully'); return promise});
-    } catch (err) {
-        console.log(err);
-    }
+async function getURL(path){
+    return subscene.download(path,{zip:true}).then(file=>{
+        //console.log(file)
+        return file;
+      }).catch(error=>{console.log(error)});
 }
 
-
-
-module.exports = { getsubtitles, clean };
+module.exports = { getsubtitles, getURL };

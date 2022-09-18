@@ -8,8 +8,11 @@
 	},
 	"dependencies": {
 		"cors": "^2.8.5",
+		"dotenv": "^16.0.2",
 		"express": "^4.18.1",
+		"express-rate-limit": "^6.6.0",
 		"fs": "^0.0.1-security",
+		"hpagent": "^1.0.0",
 		"needle": "^3.1.0",
 		"node-cache": "^5.1.2",
 		"node-subscene-api": "^1.0.0",
