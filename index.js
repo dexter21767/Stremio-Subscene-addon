@@ -64,7 +64,7 @@ app.get('/:configuration?/:resource/:type/:id/:extra?.json', (req, res) => {
 		//let lang = configuration.split('|')[0].split('=')[1]
 		let lang = configuration;
 		console.log("Language", lang); 
-		if (languages.some(e => e.id === lang)) {
+		if (languages[lang]) {
 			getsubtitles(type, id, lang).then(subtitles => {
 				//console.log('subtitles', subtitles)
 				res.send(JSON.stringify({ subtitles: subtitles }));
@@ -76,7 +76,7 @@ app.get('/:configuration?/:resource/:type/:id/:extra?.json', (req, res) => {
 	}
 })
 
-app.get('/:subtitles/:name/:language/:id.zip', limiter, async function (req, res) {
+app.get('/:subtitles/:name/:language/:id.zip', limiter, (req, res) => {
 	console.log(req.params);
 	let {subtitles,name,language,id} = req.params;
 	try {
@@ -85,8 +85,8 @@ app.get('/:subtitles/:name/:language/:id.zip', limiter, async function (req, res
 		res.setHeader('responseEncoding', 'null'); 
 		res.setHeader('Content-Type', 'arraybuffer/json'); 
 		console.log(path);
-	return getURL(path).then(response=>{
-		return res.send(response);
+	getURL(path).then(response=>{
+		res.send(response);
 	} ).catch(err=> {console.log(err)})
 	} catch (err) {
 	  console.log(err)

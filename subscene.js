@@ -2,38 +2,40 @@ const cinemeta = require('./lib/cinemeta');
 const subscene = require('node-subscene-api')
 const config = require('./config');
 require('dotenv').config();
-var isoConv = require('iso-language-converter');
-
+const languages = require('./languages.json');
+const count = 5;
 const NodeCache = require("node-cache");
 const Cache = new NodeCache();
+const filesCache = new NodeCache();
 
 async function getsubtitles(type, id, lang) {
     const meta = await cinemeta(type, id)
     const slug = meta.slug;
     const moviePath = `/subtitles/${slug}/`;
-    // console.log(moviePath);
-    const cachID = id + '_' + lang
-    const cached = Cache.get(cachID);
+    console.log(moviePath);
+    const cachID = `${id}_${lang}`;
+    let cached = Cache.get(cachID);
 
     if (cached) {
         console.log('cached main', cachID, cached);
         return cached
     } else {
         let subs = [];
-        const subtitles = await subscene.getSubtitles(moviePath)
+        let subtitles = await subscene.getSubtitles(moviePath).catch(error=>{console.error(error)})
         if (subtitles[lang]) {
-            const subISO6392 = isoConv(lang.charAt(0).toUpperCase() + lang.slice(1),{from:"label",to:2})
-            subtitles[lang].forEach(function (value, i) {
+            subtitles = subtitles[lang];
+            for(let i = 0;  i < (count || subtitles.length) ;i++){
+                let value = subtitles[i];
                 if (value) {
                     let path = value.path
                     let id = path.split("/")[4]
                     subs.push({
-                        lang: subISO6392, 
-                        id,
+                        lang: languages[lang].iso||languages[lang].id, 
+                        id: `${cachID}_${i}`,
                         url: `http://127.0.0.1:11470/subtitles.vtt?from=${config.local}${path}.zip`
                     });
                 }
-            });
+            }
 
             console.log('subs',subs);
             console.log("Cache keys", Cache.keys());
@@ -46,10 +48,19 @@ async function getsubtitles(type, id, lang) {
 }
 
 async function getURL(path){
+    
+    let cached = filesCache.get(path);
+    if (cached) {
+        console.log('File already cached');
+        return cached
+    } else {
     return subscene.download(path,{zip:true}).then(file=>{
         //console.log(file)
+        let cached = filesCache.set(path, file);
+        console.log("Caching File", cached)
         return file;
       }).catch(error=>{console.log(error)});
+    }
 }
 
 module.exports = { getsubtitles, getURL };
