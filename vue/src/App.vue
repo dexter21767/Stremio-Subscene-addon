@@ -235,7 +235,7 @@ useHead({
         {
             rel: "icon",
             type: "image/svg+xml",
-            href: manifest.logo,
+            href: "https://subscene.com/favicon.ico",
         }
     ],
 })
