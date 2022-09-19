@@ -7,3 +7,4 @@
 /test.js
 /package-lock.json
 /landingTemplate.js
+.env

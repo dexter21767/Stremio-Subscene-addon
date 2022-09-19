@@ -2,7 +2,7 @@ const express = require("express");
 const app = express();
 const cors = require('cors');
 const path = require('path');
-const { getsubtitles, getURL } = require('./subscene');
+const { subtitles, proxyStream } = require('./subscene');
 const manifest = require("./manifest.json");
 const rateLimit = require('express-rate-limit')
 
@@ -60,12 +60,10 @@ app.get('/:configuration?/:resource/:type/:id/:extra?.json', (req, res) => {
 
 	//const extra = req.params.extra ? req.parse(req.url.split('/').pop().slice(0, -5)) : {}
 	if (configuration !== "subtitles" && configuration) {
-		
 		//let lang = configuration.split('|')[0].split('=')[1]
 		let lang = configuration;
-		console.log("Language", lang); 
 		if (languages[lang]) {
-			getsubtitles(type, id, lang).then(subtitles => {
+			subtitles(type, id, lang).then(subtitles => {
 				//console.log('subtitles', subtitles)
 				res.send(JSON.stringify({ subtitles: subtitles }));
 				res.end();
@@ -85,7 +83,7 @@ app.get('/:subtitles/:name/:language/:id.zip', limiter, (req, res) => {
 		res.setHeader('responseEncoding', 'null'); 
 		res.setHeader('Content-Type', 'arraybuffer/json'); 
 		console.log(path);
-	getURL(path).then(response=>{
+		proxyStream(path).then(response=>{
 		res.send(response);
 	} ).catch(err=> {console.log(err)})
 	} catch (err) {

@@ -2,6 +2,7 @@ var env = process.env.NODE_ENV ? 'beamup':'local';
 
 var config = {
     BaseURL: "https://subscene.com",
+    APIURL: 'https://api.themoviedb.org/3'
 }
 
 switch (env) {
