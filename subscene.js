@@ -29,7 +29,7 @@ async function subtitles(type, id, lang) {
             moviePath = '/subtitles/' + meta.slug;
         }
         console.log(moviePath);
-        return await sleep(2000).then(() => { return getsubtitles(moviePath, id.split(":")[0] + '_season_' + id.split(":")[1], lang ,episode) })
+        return await sleep(2000).then(() => { return getsubtitles(moviePath, id.split(":")[0] + '_season_' + id.split(":")[1], lang, episode) })
         function sleep(ms) {
             return new Promise((resolve) => {
                 setTimeout(resolve, ms);
@@ -40,8 +40,8 @@ async function subtitles(type, id, lang) {
 }
 
 
-async function getsubtitles(moviePath, id, lang,episode) {
-    console.log(moviePath, id, lang,episode)
+async function getsubtitles(moviePath, id, lang, episode) {
+    console.log(moviePath, id, lang, episode)
     const cachID = `${id}_${lang}`;
     let cached = Cache.get(cachID);
     if (cached) {
@@ -56,27 +56,29 @@ async function getsubtitles(moviePath, id, lang,episode) {
             subtitles = subtitles[lang];
             //console.log('subtitles',subtitles)
             let sub;
-            if(episode){
-                let episodeText = (episode.length==1)?('0'+episode):eposide;
-                episodeText = 'E'+episodeText
-                console.log('episode',episodeText)
+            if (episode) {
+                let episodeText = (episode.length == 1) ? ('0' + episode) : eposide;
+                episodeText = 'E' + episodeText
+                console.log('episode', episodeText)
                 sub = filtered(subtitles, 'title', episodeText)
-                if(!sub){
-                    let episodeText = episode.length==1?'0'+episode:eposide;
-                    console.log('episode',episode)
-                    sub = filtered(subtitles, 'title', episodeText)
-                }
+                console.log('sub', sub)
+
+                episodeText = episode.length == 1 ? '0' + episode : eposide;
+                sub = sub.concat(filtered(subtitles, 'title', episodeText))
+                sub = [...new Set(sub)];
+                console.log('sub', sub)
+
             }
-            if(sub){
+            if (sub) {
                 subtitles = sub;
             }
             for (let i = 0; i < (count || subtitles.length); i++) {
                 let value = subtitles[i];
                 if (value) {
                     let path = value.path
-                    if(episode){
+                    if (episode) {
                         url = `http://127.0.0.1:11470/subtitles.vtt?from=${config.local}${path}.zip`
-                    }else{
+                    } else {
                         url = `http://127.0.0.1:11470/subtitles.vtt?from=${config.local}${path}.zip`
                     }
                     subs.push({
@@ -97,15 +99,15 @@ async function getsubtitles(moviePath, id, lang,episode) {
     }
 }
 
-async function proxyStream(path,episode) {
-    let cachID = episode?path+'_'+episode:path;
+async function proxyStream(path, episode) {
+    let cachID = episode ? path + '_' + episode : path;
     let cached = filesCache.get(cachID);
     if (cached) {
-        console.log('File already cached',cachID);
+        console.log('File already cached', cachID);
         return cached
     } else {
-        return subscene.download(path,{zip:true}).then(file => {
-            console.log('file',file)
+        return subscene.download(path, { zip: true }).then(file => {
+            console.log('file', file)
             let cached = filesCache.set(cachID, file);
             console.log("Caching File", cached)
             return file;
