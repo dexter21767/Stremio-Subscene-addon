@@ -21,7 +21,7 @@ async function subtitles(type, id, lang) {
     else {
         let season = parseInt(id.split(':')[1]);
         season = ordinalInWord(season);
-
+        let episode = id.split(':')[2];
         var moviePath = '/subtitles/' + meta.slug + '-' + season + '-season';
         let subtitles = await subscene.getSubtitles(moviePath).catch(error => { console.error(error) })
         console.log('subtitles', Object.keys(subtitles).length)
@@ -29,7 +29,7 @@ async function subtitles(type, id, lang) {
             moviePath = '/subtitles/' + meta.slug;
         }
         console.log(moviePath);
-        return await sleep(1500).then(() => { return getsubtitles(moviePath, id.split(":")[0] + '_season_' + id.split(":")[1], lang) })
+        return await sleep(2000).then(() => { return getsubtitles(moviePath, id.split(":")[0] + '_season_' + id.split(":")[1], lang ,episode) })
         function sleep(ms) {
             return new Promise((resolve) => {
                 setTimeout(resolve, ms);
@@ -40,8 +40,8 @@ async function subtitles(type, id, lang) {
 }
 
 
-async function getsubtitles(moviePath, id, lang) {
-    console.log(moviePath, id, lang)
+async function getsubtitles(moviePath, id, lang,episode) {
+    console.log(moviePath, id, lang,episode)
     const cachID = `${id}_${lang}`;
     let cached = Cache.get(cachID);
     if (cached) {
@@ -51,17 +51,38 @@ async function getsubtitles(moviePath, id, lang) {
         let subs = [];
         console.log(moviePath)
         let subtitles = await subscene.getSubtitles(moviePath).catch(error => { console.error(error) })
-        console.log('subtitles', subtitles)
+        //console.log('subtitles', subtitles)
         if (subtitles[lang]) {
             subtitles = subtitles[lang];
+            //console.log('subtitles',subtitles)
+            let sub;
+            if(episode){
+                let episodeText = (episode.length==1)?('0'+episode):eposide;
+                episodeText = 'E'+episodeText
+                console.log('episode',episodeText)
+                sub = filtered(subtitles, 'title', episodeText)
+                if(!sub){
+                    let episodeText = episode.length==1?'0'+episode:eposide;
+                    console.log('episode',episode)
+                    sub = filtered(subtitles, 'title', episodeText)
+                }
+            }
+            if(sub){
+                subtitles = sub;
+            }
             for (let i = 0; i < (count || subtitles.length); i++) {
                 let value = subtitles[i];
                 if (value) {
                     let path = value.path
+                    if(episode){
+                        url = `http://127.0.0.1:11470/subtitles.vtt?from=${config.local}${path}.zip`
+                    }else{
+                        url = `http://127.0.0.1:11470/subtitles.vtt?from=${config.local}${path}.zip`
+                    }
                     subs.push({
                         lang: languages[lang].iso || languages[lang].id,
                         id: `${cachID}_${i}`,
-                        url: `http://127.0.0.1:11470/subtitles.vtt?from=${config.local}${path}.zip`
+                        url: url
                     });
                 }
             }
@@ -76,21 +97,33 @@ async function getsubtitles(moviePath, id, lang) {
     }
 }
 
-async function proxyStream(path) {
-
-    let cached = filesCache.get(path);
+async function proxyStream(path,episode) {
+    let cachID = episode?path+'_'+episode:path;
+    let cached = filesCache.get(cachID);
     if (cached) {
-        console.log('File already cached');
+        console.log('File already cached',cachID);
         return cached
     } else {
-        return subscene.download(path, { zip: true }).then(file => {
-            //console.log(file)
-            let cached = filesCache.set(path, file);
+        return subscene.download(path,{zip:true}).then(file => {
+            console.log('file',file)
+            let cached = filesCache.set(cachID, file);
             console.log("Caching File", cached)
             return file;
         }).catch(error => { console.log(error) });
     }
 }
+
+
+function filtered(list, key, value) {
+    var filtered = [], i = list.length;
+    var reg = new RegExp(value.toLowerCase(), 'gi');
+    while (i--) {
+        if (reg.test(list[i][key].toLowerCase())) {
+            filtered.push(list[i]);
+        }
+    }
+    return filtered;
+};
 
 function ordinalInWord(cardinal) {
     const ordinals = ["zeroth", "First", "Second", "Third", "Fourth", "Fifth", "Sixth", "Seventh", "Eighth", "Ninth", "Tenth", "Eleventh", "Twelfth", "Thirteenth", "Fourteenth", "Fifteenth", "Sixteenth", "Seventeenth", "Eighteenth", "Nineteenth", "Twentieth"]

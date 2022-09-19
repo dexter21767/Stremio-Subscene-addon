@@ -1,6 +1,6 @@
 {
 	"name": "stremio-subscene",
-	"version": "0.0.1",
+	"version": "0.0.3",
 	"description": "Addon for getting subtitles from Subscene, by Dexter21767",
 	"scripts": {
 		"start": "node server.js",

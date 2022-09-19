@@ -74,16 +74,16 @@ app.get('/:configuration?/:resource/:type/:id/:extra?.json', (req, res) => {
 	}
 })
 
-app.get('/:subtitles/:name/:language/:id.zip', limiter, (req, res) => {
+app.get('/:subtitles/:name/:language/:id/:episode?\.:extension?', limiter, (req, res) => {
 	console.log(req.params);
-	let {subtitles,name,language,id} = req.params;
+	let {subtitles,name,language,id,episode,extension} = req.params;
 	try {
 		let path = `/${subtitles}/${name}/${language}/${id}`
 		res.setHeader('Cache-Control', 'max-age=86400, public');
 		res.setHeader('responseEncoding', 'null'); 
 		res.setHeader('Content-Type', 'arraybuffer/json'); 
 		console.log(path);
-		proxyStream(path).then(response=>{
+		proxyStream(path,episode).then(response=>{
 		res.send(response);
 	} ).catch(err=> {console.log(err)})
 	} catch (err) {
