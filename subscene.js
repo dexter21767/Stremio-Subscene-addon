@@ -7,11 +7,22 @@ const count = 10;
 const NodeCache = require("node-cache");
 const Cache = new NodeCache();
 const filesCache = new NodeCache();
+const MetaCache = new NodeCache();
+const subsceneCache = new NodeCache();
+
 
 async function subtitles(type, id, lang) {
     console.log(type, id, lang);
-    let meta = await tmdb(type, id.split(':')[0]);
-    console.log(meta)
+    let metaid = id.split(':')[0];
+    var meta = MetaCache.get(metaid);
+    if (!meta) {
+        meta = await tmdb(type, metaid);
+        if (meta) {
+            MetaCache.set(metaid, meta);
+        }
+    }
+    if(meta){
+    console.log("meta",meta)
     if (type == "movie") {
         let moviePath = `/subtitles/${meta.slug}/`;
         console.log(moviePath);
@@ -28,6 +39,9 @@ async function subtitles(type, id, lang) {
         if (!Object.keys(subtitles).length) {
             moviePath = '/subtitles/' + meta.slug;
         }
+        if(meta.slug=='the-100'){
+            moviePath = `/subtitles/the-100-the-hundred-${season}-season`;
+        }
         console.log(moviePath);
         return await sleep(2000).then(() => { return getsubtitles(moviePath, id.split(":")[0] + '_season_' + id.split(":")[1], lang, episode) })
         function sleep(ms) {
@@ -35,7 +49,7 @@ async function subtitles(type, id, lang) {
                 setTimeout(resolve, ms);
             });
         }
-
+        }
     }
 }
 
@@ -50,8 +64,16 @@ async function getsubtitles(moviePath, id, lang, episode) {
     } else {
         let subs = [];
         console.log(moviePath)
-        let subtitles = await subscene.getSubtitles(moviePath).catch(error => { console.error(error) })
-        //console.log('subtitles', subtitles)
+
+        var subtitles = subsceneCache.get(moviePath);
+        if (!subtitles) {
+            subtitles = await subscene.getSubtitles(moviePath).catch(error => { console.error(error) })
+            if (subtitles) {
+                subsceneCache.set(moviePath, subtitles);
+            }
+        }
+        console.log('subtitles', Object.keys(subtitles).length)
+        console.log('subtitles', moviePath)
         if (subtitles[lang]) {
             subtitles = subtitles[lang];
             //console.log('subtitles',subtitles)
@@ -95,6 +117,8 @@ async function getsubtitles(moviePath, id, lang, episode) {
             let cached = Cache.set(cachID, subs);
             console.log("cached", cached)
             return subs;
+        }else{
+            return
         }
     }
 }

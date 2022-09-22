@@ -24,13 +24,16 @@ async function getMeta(type, id) {
     if (type == "movie") {
         let url = `${BaseURL}/movie/${id}?api_key=${process.env.API_KEY}`
         let res = await request(url);
-        let title = res.data.original_title;
+        console.log(res.data.title)
+        let title = res.data.original_title.match(/[\u3400-\u9FBF]/) ? res.data.title : res.data.original_title;
         var slug = slugify(title, { replacement: '-', remove: undefined, lower: true, strict: true, trim: true });
         return { title: title, slug: slug }
     } else if (type == "series") {
         let url = `${BaseURL}/find/${id}?api_key=${process.env.API_KEY}&external_source=imdb_id`
         let res = await request(url);
-        let title = res.data.tv_results[0].original_name;
+        //if ()
+        console.log(res.data)
+        let title = res.data.tv_results[0].original_name.match(/[\u3400-\u9FBF]/) ? res.data.tv_results[0].name : res.data.tv_results[0].original_name;
         var slug = slugify(title, { replacement: '-', remove: undefined, lower: true, strict: true, trim: true });
         return { title: title, slug: slug }
     }

@@ -202,7 +202,7 @@
                             UI by:
                             <a href="https://github.com/rleroi" target="_blank" class="text-purple-700">rab1t</a><br />
                             Background by:
-                            <a href="https://github.com/alesinka" target="_blank" class="text-purple-700">Alesinka</a>
+                            <a href="https://twitter.com/shino_illust" target="_blank" class="text-purple-700">shino</a>
                             .
                         </p>
                     </div>
@@ -214,18 +214,12 @@
 </template>
 
 <script setup>
-import draggable from 'vuedraggable';
-import axios from 'axios';
 import { reactive, ref, onMounted } from 'vue';
 import Modal from 'flowbite/src/components/modal';
-import Dropdown from 'flowbite/src/components/dropdown';
 import { useHead } from "@vueuse/head";
-import $ from 'jquery'
 import * as manifest from '../../manifest.json';
-//const languages = require('../../languages.js');
 import * as langs from '../../languages.json';
 const languages = langs.default 
-// import SearchModal from './components/SearchModal.vue';
 
 const stylizedTypes = manifest.types.map(t => t[0].toUpperCase() + t.slice(1));
 
@@ -283,11 +277,12 @@ function selectLanguage(lang) {
 }
 
 function filtered(list, key, value) {
-    var filtered = [], i = list.length;
+    var filtered = [], i = Object.keys(list).length;
     var reg = new RegExp(value, 'gi');
     while (i--) {
-        if (reg.test(list[i][key].toLowerCase())) {
-            filtered.push(list[i]);
+        console.log(list[Object.keys(list)[i]])
+        if (reg.test(list[Object.keys(list)[i]][key].toLowerCase())) {
+            filtered.push(list[Object.keys(list)[i]]);
         }
     }
     return filtered;

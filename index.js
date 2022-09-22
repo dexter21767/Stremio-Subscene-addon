@@ -51,16 +51,12 @@ app.get('/:configuration?/manifest.json', (_, res) => {
 });
 
 app.get('/:configuration?/:resource/:type/:id/:extra?.json', (req, res) => {
-	//http://127.0.0.1:63355/subtitles/movie/tt1745960.json
 	res.setHeader('Cache-Control', 'max-age=86400, public');
 	res.setHeader('Content-Type', 'application/json');
 
 	console.log(req.params);
 	const { configuration, resource, type, id } = req.params;
-
-	//const extra = req.params.extra ? req.parse(req.url.split('/').pop().slice(0, -5)) : {}
 	if (configuration !== "subtitles" && configuration) {
-		//let lang = configuration.split('|')[0].split('=')[1]
 		let lang = configuration;
 		if (languages[lang]) {
 			subtitles(type, id, lang).then(subtitles => {
@@ -76,20 +72,20 @@ app.get('/:configuration?/:resource/:type/:id/:extra?.json', (req, res) => {
 
 app.get('/:subtitles/:name/:language/:id/:episode?\.:extension?', limiter, (req, res) => {
 	console.log(req.params);
-	let {subtitles,name,language,id,episode,extension} = req.params;
+	let { subtitles, name, language, id, episode, extension } = req.params;
 	try {
 		let path = `/${subtitles}/${name}/${language}/${id}`
 		res.setHeader('Cache-Control', 'max-age=86400, public');
-		res.setHeader('responseEncoding', 'null'); 
-		res.setHeader('Content-Type', 'arraybuffer/json'); 
+		res.setHeader('responseEncoding', 'null');
+		res.setHeader('Content-Type', 'arraybuffer/json');
 		console.log(path);
-		proxyStream(path,episode).then(response=>{
-		res.send(response);
-	} ).catch(err=> {console.log(err)})
+		proxyStream(path, episode).then(response => {
+			res.send(response);
+		}).catch(err => { console.log(err) })
 	} catch (err) {
-	  console.log(err)
-	  return res.send("Couldn't get the subtitle.")
+		console.log(err)
+		return res.send("Couldn't get the subtitle.")
 	}
-  });
+});
 
 module.exports = app

@@ -12,7 +12,7 @@ switch (env) {
         break;
 
     case 'local':
-		config.port = 63355
+		config.port = 63555
         config.local = "http://127.0.0.1:" + config.port;
         break;
 }
