@@ -9,12 +9,13 @@ const Cache = new NodeCache();
 const filesCache = new NodeCache();
 const MetaCache = new NodeCache();
 const subsceneCache = new NodeCache();
+const searchCache = new NodeCache();
 
 
 async function subtitles(type, id, lang) {
     console.log(type, id, lang);
     let metaid = id.split(':')[0];
-    var meta = MetaCache.get(metaid);
+    let meta = MetaCache.get(metaid);
     if (!meta) {
         meta = await tmdb(type, metaid);
         if (meta) {
@@ -33,6 +34,17 @@ async function subtitles(type, id, lang) {
         let season = parseInt(id.split(':')[1]);
         season = ordinalInWord(season);
         let episode = id.split(':')[2];
+        let searchID = `${metaid}_${id.split(':')[1]}`;
+        let search = searchCache.get(searchID);
+        if (!search) {
+            search = await subscene.search(`${meta.title} ${season} season`);
+            if (search) {
+                searchCache.set(searchID, search);
+            }
+        }
+        let moviePath = search[0].path;
+        return getsubtitles(moviePath, id.split(":")[0] + '_season_' + id.split(":")[1], lang, episode)
+        /*
         var moviePath = '/subtitles/' + meta.slug + '-' + season + '-season';
         let subtitles = await subscene.getSubtitles(moviePath).catch(error => { console.error(error) })
         console.log('subtitles', Object.keys(subtitles).length)
@@ -48,7 +60,7 @@ async function subtitles(type, id, lang) {
             return new Promise((resolve) => {
                 setTimeout(resolve, ms);
             });
-        }
+        }*/
         }
     }
 }
@@ -83,12 +95,9 @@ async function getsubtitles(moviePath, id, lang, episode) {
                 episodeText = 'E' + episodeText
                 console.log('episode', episodeText)
                 sub = filtered(subtitles, 'title', episodeText)
-                console.log('sub', sub)
-
                 episodeText = episode.length == 1 ? '0' + episode : eposide;
                 sub = sub.concat(filtered(subtitles, 'title', episodeText))
                 sub = [...new Set(sub)];
-                console.log('sub', sub)
 
             }
             if (sub) {
@@ -105,7 +114,7 @@ async function getsubtitles(moviePath, id, lang, episode) {
                     }
                     subs.push({
                         lang: languages[lang].iso || languages[lang].id,
-                        id: `${cachID}_${i}`,
+                        id: `${cachID}_ep${episode}_${i}`,
                         url: url
                     });
                 }
