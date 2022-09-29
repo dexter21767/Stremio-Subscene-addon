@@ -19,8 +19,7 @@
         }
     ],
     "types": [
-            "movie",
-            "series"
+            "subtitles"
     ],
     "behaviorHints": {
         "configurable": true,
