@@ -85,17 +85,17 @@ async function getsubtitles(moviePath, id, lang, episode) {
             }
         }
         console.log('subtitles', Object.keys(subtitles).length)
-        console.log('subtitles', moviePath)
+        console.log('subtitles', moviePath, id, lang, episode)
         if (subtitles[lang]) {
             subtitles = subtitles[lang];
             //console.log('subtitles',subtitles)
             let sub;
             if (episode) {
-                let episodeText = (episode.length == 1) ? ('0' + episode) : eposide;
+                let episodeText = (episode.length == 1) ? ('0' + episode) : episode;
                 episodeText = 'E' + episodeText
                 console.log('episode', episodeText)
                 sub = filtered(subtitles, 'title', episodeText)
-                episodeText = episode.length == 1 ? '0' + episode : eposide;
+                episodeText = episode.length == 1 ? '0' + episode : episode;
                 sub = sub.concat(filtered(subtitles, 'title', episodeText))
                 sub = [...new Set(sub)];
 
