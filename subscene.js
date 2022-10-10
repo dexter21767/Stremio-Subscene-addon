@@ -113,7 +113,7 @@ async function getsubtitles(moviePath, id, lang, episode) {
     }
 }
 
-s
+
 function filtered(list, key, value) {
     var filtered = [], i = list.length;
     var reg = new RegExp(value.toLowerCase(), 'gi');
