@@ -5,8 +5,11 @@ require('dotenv').config();
 const languages = require('./languages.json');
 const count = 10;
 const NodeCache = require("node-cache");
+
+
 const Cache = new NodeCache({ stdTTL: (0.5 * 60 * 60), checkperiod: (1 * 60 * 60) });
 const MetaCache = new NodeCache({ stdTTL: (0.5 * 60 * 60), checkperiod: (1 * 60 * 60) });
+const filesCache =  new NodeCache({ stdTTL: (0.5 * 60 * 60), checkperiod: (1 * 60 * 60) });
 const subsceneCache = new NodeCache({ stdTTL: (0.5 * 60 * 60), checkperiod: (1 * 60 * 60) });
 const searchCache = new NodeCache({ stdTTL: (0.5 * 60 * 60), checkperiod: (1 * 60 * 60) });
 
@@ -21,29 +24,45 @@ async function subtitles(type, id, lang) {
             MetaCache.set(metaid, meta);
         }
     }
-    if (meta) {
-        console.log("meta", meta)
-        if (type == "movie") {
-            let moviePath = `/subtitles/${meta.slug}/`;
-            console.log(moviePath);
+    if(meta){
+    console.log("meta",meta)
+    if (type == "movie") {
+        let moviePath = `/subtitles/${meta.slug}/`;
+        console.log(moviePath);
 
-            return getsubtitles(moviePath, id, lang)
-        }
-        else {
-            let season = parseInt(id.split(':')[1]);
-            season = ordinalInWord(season);
-            let episode = id.split(':')[2];
-            let searchID = `${metaid}_${id.split(':')[1]}`;
-            let search = searchCache.get(searchID);
-            console
-            if (!search) {
-                search = await subscene.search(`${meta.title} ${season} season`);
-                if (search) {
-                    searchCache.set(searchID, search);
-                }
+        return getsubtitles(moviePath, id, lang)
+    }
+    else {
+        let season = parseInt(id.split(':')[1]);
+        season = ordinalInWord(season);
+        const episode = id.split(':')[2];
+        const searchID = `${metaid}_${id.split(':')[1]}`;
+        let search = searchCache.get(searchID);
+        if (!search) {
+            search = await subscene.search(`${meta.title} ${season} season`);
+            if (search) {
+                searchCache.set(searchID, search);
             }
-            let moviePath = search[0].path;
-            return getsubtitles(moviePath, id.split(":")[0] + '_season_' + id.split(":")[1], lang, episode)
+        }
+        let moviePath = search[0].path;
+        return getsubtitles(moviePath, id.split(":")[0] + '_season_' + id.split(":")[1], lang, episode)
+        /*
+        var moviePath = '/subtitles/' + meta.slug + '-' + season + '-season';
+        let subtitles = await subscene.getSubtitles(moviePath).catch(error => { console.error(error) })
+        console.log('subtitles', Object.keys(subtitles).length)
+        if (!Object.keys(subtitles).length) {
+            moviePath = '/subtitles/' + meta.slug;
+        }
+        if(meta.slug=='the-100'){
+            moviePath = `/subtitles/the-100-the-hundred-${season}-season`;
+        }
+        console.log(moviePath);
+        return await sleep(2000).then(() => { return getsubtitles(moviePath, id.split(":")[0] + '_season_' + id.split(":")[1], lang, episode) })
+        function sleep(ms) {
+            return new Promise((resolve) => {
+                setTimeout(resolve, ms);
+            });
+        }*/
         }
     }
 }
@@ -67,6 +86,8 @@ async function getsubtitles(moviePath, id, lang, episode) {
                 subsceneCache.set(moviePath, subtitles);
             }
         }
+        console.log('subtitles', Object.keys(subtitles).length)
+        console.log('subtitles', moviePath)
         if (subtitles[lang]) {
             subtitles = subtitles[lang];
             //console.log('subtitles',subtitles)
@@ -107,9 +128,25 @@ async function getsubtitles(moviePath, id, lang, episode) {
             let cached = Cache.set(cachID, subs);
             console.log("cached", cached)
             return subs;
-        } else {
+        }else{
             return
         }
+    }
+}
+
+async function proxyStream(path, episode) {
+    let cachID = episode ? path + '_' + episode : path;
+    let cached = filesCache.get(cachID);
+    if (cached) {
+        console.log('File already cached', cachID);
+        return cached
+    } else {
+        return subscene.download(path, { zip: true }).then(file => {
+            console.log('file', file)
+            let cached = filesCache.set(cachID, file);
+            console.log("Caching File", cached)
+            return file;
+        }).catch(error => { console.log(error) });
     }
 }
 
@@ -161,4 +198,4 @@ function ordinalInWord(cardinal) {
 }
 
 
-module.exports = { subtitles };
+module.exports = { subtitles, proxyStream };
