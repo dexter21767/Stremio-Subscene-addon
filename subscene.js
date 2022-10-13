@@ -1,5 +1,6 @@
 const tmdb = require('./tmdb');
-const subscene = require('node-subscene-api');
+const kitsu = require('./kitsu');
+const subscene = require('./subsceneAPI');
 const config = require('./config');
 require('dotenv').config();
 const languages = require('./languages.json');
@@ -9,12 +10,57 @@ const NodeCache = require("node-cache");
 
 const Cache = new NodeCache({ stdTTL: (0.5 * 60 * 60), checkperiod: (1 * 60 * 60) });
 const MetaCache = new NodeCache({ stdTTL: (0.5 * 60 * 60), checkperiod: (1 * 60 * 60) });
+const KitsuCache = new NodeCache({ stdTTL: (0.5 * 60 * 60), checkperiod: (1 * 60 * 60) });
 const filesCache =  new NodeCache({ stdTTL: (0.5 * 60 * 60), checkperiod: (1 * 60 * 60) });
 const subsceneCache = new NodeCache({ stdTTL: (0.5 * 60 * 60), checkperiod: (1 * 60 * 60) });
 const searchCache = new NodeCache({ stdTTL: (0.5 * 60 * 60), checkperiod: (1 * 60 * 60) });
 
-
 async function subtitles(type, id, lang) {
+    if (id.match(/tt[0-9]/)){
+		return await (TMDB(type, id, lang)) 
+	}	if (id.match(/kitsu:[0-9]/)){
+        return await (Kitsu(type, id, lang)) 
+		console.log(type, id, lang)
+	}
+}
+async function Kitsu(type, id, lang) {
+    console.log(type, id, lang);
+    let metaid = id.split(':')[1];
+    let meta = KitsuCache.get(metaid);
+    if (!meta) {
+        meta = await kitsu(metaid);
+        if (meta) {
+            KitsuCache.set(metaid, meta);
+        }
+    }
+    if(meta){
+        //console.log(meta)
+        const episode = id.split(':')[2];
+        const searchID = `kitisu_${metaid}_${id.split(':')[1]}`;
+        let search = searchCache.get(searchID);
+        let slug = `${meta.title["en_jp"]} (${meta.title["en"]}) (${meta.year})`;
+        var moviePath = '';
+        console.log('slug',slug)
+        console.log('title',meta.title["en_jp"])
+        if (!search) {
+            search = await subscene.search(`${encodeURIComponent(meta.title["en_jp"])}`);
+            if (search) {
+                searchCache.set(searchID, search);
+            }
+        }
+        for(let i = 0; i<search.length;i++){
+            if(search[i].title.includes(meta.title["en_jp"])){
+                moviePath = search[i].path
+                break
+            }
+        }
+        //let moviePath = search[0].path;
+        console.log(moviePath)
+        return getsubtitles(moviePath, meta.slug.replace('-','_'), lang, episode)
+    }
+}
+
+async function TMDB(type, id, lang) {
     console.log(type, id, lang);
     let metaid = id.split(':')[0];
     let meta = MetaCache.get(metaid);
@@ -32,7 +78,7 @@ async function subtitles(type, id, lang) {
 
         return getsubtitles(moviePath, id, lang)
     }
-    else {
+    else if (type == "series") {
         let season = parseInt(id.split(':')[1]);
         season = ordinalInWord(season);
         const episode = id.split(':')[2];

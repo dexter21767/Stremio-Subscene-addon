@@ -2,7 +2,8 @@ var env = process.env.NODE_ENV ? 'beamup':'local';
 
 var config = {
     BaseURL: "https://subscene.com",
-    APIURL: 'https://api.themoviedb.org/3'
+    APIURL: 'https://api.themoviedb.org/3',
+    kitsuURL: 'https://kitsu.io/api/edge'
 }
 
 switch (env) {

@@ -1,6 +1,6 @@
 {
     "id": "community.subscene",
-    "version": "0.0.4",
+    "version": "0.0.5",
     "name": "Subscene subtitles by dexter21767",
     "description": "Addon for getting subtitles from Subscene, by Dexter21767.",
     "logo": "https://i.imgur.com/vJ2wajD.png",
@@ -14,7 +14,7 @@
                 "series"
             ],
             "idPrefixes": [
-                "tt"
+                "tt","kitsu"
             ]
         }
     ],

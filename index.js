@@ -55,7 +55,8 @@ app.get('/:configuration?/:resource/:type/:id/:extra?.json', (req, res) => {
 	res.setHeader('Content-Type', 'application/json');
 
 	console.log(req.params);
-	const { configuration, resource, type, id } = req.params;
+	var { configuration, resource, type, id } = req.params;
+
 	if (configuration !== "subtitles" && configuration) {
 		let lang = configuration;
 		if (languages[lang]) {
