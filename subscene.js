@@ -159,15 +159,11 @@ async function getsubtitles(moviePath, id, lang, episode) {
                     url = config.local+"/sub.vtt?"+sub2vtt.gerenateUrl(path);
                     subs.push({
                         lang: languages[lang].iso || languages[lang].id,
-                        id: `${cachID}_ep${episode}_${i}`,
+                        id: episode?`${cachID}_ep${episode}_${i}`:`${cachID}_${i}`,
                         url: url
                     });
                 }
             }
-
-            console.log('subs', subs);
-            console.log("Cache keys", Cache.keys());
-            //subs = subs.filter(Boolean);
             let cached = Cache.set(cachID, subs);
             console.log("cached", cached)
             return subs;
@@ -177,18 +173,17 @@ async function getsubtitles(moviePath, id, lang, episode) {
     }
 }
 
-async function proxyStream(path, episode) {
+async function downloadUrl(path, episode) {
     let cachID = episode ? path + '_' + episode : path;
     let cached = filesCache.get(cachID);
     if (cached) {
         console.log('File already cached', cachID);
         return cached
     } else {
-        return subscene.download(path, { zip: true }).then(file => {
-            console.log('file', file)
-            let cached = filesCache.set(cachID, file);
+        return subscene.downloadUrl(path).then(url => {
+            let cached = filesCache.set(cachID, url);
             console.log("Caching File", cached)
-            return file;
+            return url;
         }).catch(error => { console.log(error) });
     }
 }
@@ -241,4 +236,4 @@ function ordinalInWord(cardinal) {
 }
 
 
-module.exports = { subtitles, proxyStream, downloadUrl:subscene.downloadUrl };
+module.exports = { subtitles, downloadUrl };

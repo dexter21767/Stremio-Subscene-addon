@@ -2,18 +2,25 @@ const express = require("express");
 const app = express();
 const cors = require('cors');
 const path = require('path');
-const { subtitles, proxyStream,downloadUrl } = require('./subscene');
+const { subtitles, downloadUrl } = require('./subscene');
 const manifest = require("./manifest.json");
-const rateLimit = require('express-rate-limit')
 
 const languages = require('./languages.json');
 
-const limiter = rateLimit({
-	windowMs: 15 * 60 * 1000, // 15 minutes
-	max: 30, // Limit each IP to 30 requests per `window` (here, per 15 minutes)
-	standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
-	legacyHeaders: false, // Disable the `X-RateLimit-*` headers
-})
+const swStats = require('swagger-stats')
+
+app.use(swStats.getMiddleware({
+	name: manifest.name,
+	version: manifest.version,
+	authentication: true,
+	onAuthenticate: function (req, username, password) {
+		// simple check for username and password
+		const User = process.env.USER?process.env.USER:'stremio'
+		const Pass = process.env.PASS?process.env.PASS:'stremioIsTheBest'
+		return ((username === User
+			&& (password === Pass)))
+	}
+}))
 
 app.set('trust proxy', true)
 
@@ -71,6 +78,7 @@ app.get('/:configuration?/:resource/:type/:id/:extra?.json', (req, res) => {
 	}
 })
 
+/*
 app.get('/:subtitles/:name/:language/:id/:episode?\.:extension?', limiter, (req, res) => {
 	console.log(req.params);
 	let { subtitles, name, language, id, episode, extension } = req.params;
@@ -88,7 +96,7 @@ app.get('/:subtitles/:name/:language/:id/:episode?\.:extension?', limiter, (req,
 		return res.send("Couldn't get the subtitle.")
 	}
 });
-
+*/
 const sub2vtt = require('sub2vtt');
 app.get('/sub.vtt', async (req, res,next) => {
 	try {
