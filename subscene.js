@@ -6,6 +6,7 @@ require('dotenv').config();
 const languages = require('./languages.json');
 const count = 10;
 const NodeCache = require("node-cache");
+const sub2vtt = require('sub2vtt');
 
 
 const Cache = new NodeCache({ stdTTL: (0.5 * 60 * 60), checkperiod: (1 * 60 * 60) });
@@ -154,12 +155,8 @@ async function getsubtitles(moviePath, id, lang, episode) {
             for (let i = 0; i < (count || subtitles.length); i++) {
                 let value = subtitles[i];
                 if (value) {
-                    let path = value.path
-                    if (episode) {
-                        url = `http://127.0.0.1:11470/subtitles.vtt?from=${config.local}${path}.zip`
-                    } else {
-                        url = `http://127.0.0.1:11470/subtitles.vtt?from=${config.local}${path}.zip`
-                    }
+                    let path = config.BaseURL + value.path;
+                    url = config.local+"/sub.vtt?"+sub2vtt.gerenateUrl(path);
                     subs.push({
                         lang: languages[lang].iso || languages[lang].id,
                         id: `${cachID}_ep${episode}_${i}`,
@@ -244,4 +241,4 @@ function ordinalInWord(cardinal) {
 }
 
 
-module.exports = { subtitles, proxyStream };
+module.exports = { subtitles, proxyStream, downloadUrl:subscene.downloadUrl };

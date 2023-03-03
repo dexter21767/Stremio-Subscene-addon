@@ -278,7 +278,7 @@ function selectLanguage(lang) {
 
 function filtered(list, key, value) {
     var filtered = [], i = Object.keys(list).length;
-    var reg = new RegExp(value, 'gi');
+    var reg = new RegExp(value, 'i');
     while (i--) {
         console.log(list[Object.keys(list)[i]])
         if (reg.test(list[Object.keys(list)[i]][key].toLowerCase())) {

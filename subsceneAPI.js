@@ -2,7 +2,8 @@ const got = require("got-scraping").gotScraping,
 cheerio = require("cheerio"),
 config = require('./config'),
 baseUrl = config.BaseURL,
-unzip = require("adm-zip");
+unzip = require("adm-zip"),
+{ parse } = require("node-html-parser");
 
 async function search(query = String) {
   try {
@@ -40,7 +41,7 @@ function filterItOut(res) {
   }
   return results
 }
-
+/*
 async function subtitle(url = String) {
   try {
     if (!url.length) throw "Path Not Specified"
@@ -78,6 +79,43 @@ async function subtitle(url = String) {
     throw e
   }
 }
+*/
+
+async function subtitle(url = String) {
+  try {
+    if (!url.length) throw "Path Not Specified"
+    var res = await got.get(baseUrl+url,{retry:{limit:5}})
+    if (!res||!res.body)throw "No Response Found"
+    let results = []
+    let body = parse(res.body)
+    let table = body.querySelectorAll('table tbody tr')
+    for (let i = 0;i<table.length;i++){
+      let row = table[i];
+      if(row.childNodes.length>3){
+        let e = row.querySelector("td a")
+        let url = e.rawAttributes["href"]
+        let lang = e.querySelectorAll("span")[0].rawText.replace(/\t|\n|\r/g, "")
+        let title = e.querySelectorAll("span")[1].rawText.replace(/\t|\n|\r/g, "")
+        let hi = row.querySelector("td.a41")?true:false;
+        let comment = row.querySelector('td.a6 div').rawText.replace(/\t|\n|\r/g, "")
+        let sdh = (comment.toLowerCase().includes("sdh") &&!(comment.toLowerCase().includes("no sdh")||comment.toLowerCase().includes("sdh removed")))?true:false
+        results.push({
+          path: url,
+          title: title || "no title found",
+          lang: lang || "notSp",
+          hi: hi,
+          sdh: sdh
+        })
+      }
+    } 
+    results = sortByLang(results)
+    //console.log("results",results["english"])
+    return results || null
+  } catch (e) {
+    throw e
+  }
+}
+
 
 function sortByLang(subs = Array) {
   try {
@@ -96,9 +134,9 @@ function sortByLang(subs = Array) {
   }
 }
 
-async function download(url = String) {
+async function downloadUrl(url = String) {
   try {
-    let res = await got.get(baseUrl+url,{retry:{limit:5}})
+    let res = await got.get(url,{retry:{limit:5}})
     if (!res||!res.body)throw "No Data Found"
     let $ = cheerio.load(res.body),
     downUrl
@@ -106,11 +144,8 @@ async function download(url = String) {
       downUrl = e.attribs.href
     })
     if (!downUrl)throw "Unexpected Error"
-    res = await got.get(baseUrl+downUrl, {
-      responseType: "buffer"
-    })
-    if (!res||!res.body)throw "File Downloading Error"
-    return res.body
+    return baseUrl + downUrl;
+
   } catch (e) {
     throw e
   }
@@ -118,4 +153,4 @@ async function download(url = String) {
 
 module.exports.search = search
 module.exports.getSubtitles = subtitle
-module.exports.download = download
+module.exports.downloadUrl = downloadUrl

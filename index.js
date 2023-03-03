@@ -2,7 +2,7 @@ const express = require("express");
 const app = express();
 const cors = require('cors');
 const path = require('path');
-const { subtitles, proxyStream } = require('./subscene');
+const { subtitles, proxyStream,downloadUrl } = require('./subscene');
 const manifest = require("./manifest.json");
 const rateLimit = require('express-rate-limit')
 
@@ -89,4 +89,34 @@ app.get('/:subtitles/:name/:language/:id/:episode?\.:extension?', limiter, (req,
 	}
 });
 
+const sub2vtt = require('sub2vtt');
+app.get('/sub.vtt', async (req, res,next) => {
+	try {
+
+		let url,proxy;
+		
+		if (req?.query?.proxy) proxy = JSON.parse(Buffer.from(req.query.proxy, 'base64').toString());
+		if (req?.query?.from) url = req.query.from
+		else throw 'error: no url';
+		proxy =  {responseType: "buffer", "user-agent": 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko)  Safari/537.36'}
+		console.log(url);
+
+		url = await downloadUrl(url);
+
+		console.log("url", url,"proxy",proxy)
+		
+		let sub = new sub2vtt(url ,proxy);
+		
+		let file = await sub.getSubtitle();
+		
+		if (!file?.subtitle?.length) throw file.status
+
+		res.setHeader('Content-Type', 'text/vtt;charset=UTF-8');
+		res.send(file.subtitle);
+		res.end;
+	} catch (e) {
+		console.error(e);
+		//next(e);
+	}
+})
 module.exports = app
