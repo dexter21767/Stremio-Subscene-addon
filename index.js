@@ -4,7 +4,7 @@ const cors = require('cors');
 const path = require('path');
 const { subtitles, downloadUrl } = require('./subscene');
 const manifest = require("./manifest.json");
-
+const {CacheControl} = require('./config');
 const languages = require('./languages.json');
 
 const swStats = require('swagger-stats')
@@ -22,6 +22,17 @@ app.use(swStats.getMiddleware({
 	}
 }))
 
+app.use((req, res, next) => {
+    req.setTimeout(15 * 1000); // timeout time
+    req.socket.removeAllListeners('timeout'); 
+    req.socket.once('timeout', () => {
+        req.timedout = true;
+		//res.setHeader('Cache-Control', CacheControl.off);
+        res.status(504).end();
+    });
+	if (!req.timedout) next()
+});
+
 app.set('trust proxy', true)
 
 app.use('/configure', express.static(path.join(__dirname, 'vue', 'dist')));
@@ -36,13 +47,13 @@ app.get('/', (_, res) => {
 });
 
 app.get('/:configuration?/configure', (req, res) => {
-	res.setHeader('Cache-Control', 'max-age=86400,staleRevalidate=stale-while-revalidate, staleError=stale-if-error, public');
+	res.setHeader('Cache-Control', CacheControl.oneDay);
 	res.setHeader('content-type', 'text/html');
 	res.sendFile(path.join(__dirname, 'vue', 'dist', 'index.html'));
 });
 
 app.get('/manifest.json', (_, res) => {
-	res.setHeader('Cache-Control', 'max-age=86400, public');
+	res.setHeader('Cache-Control', CacheControl.oneDay);
 	res.setHeader('Content-Type', 'application/json');
 	manifest.behaviorHints.configurationRequired = true;
 	res.send(manifest);
@@ -50,32 +61,36 @@ app.get('/manifest.json', (_, res) => {
 });
 
 app.get('/:configuration?/manifest.json', (_, res) => {
-	res.setHeader('Cache-Control', 'max-age=86400, public');
+	res.setHeader('Cache-Control', CacheControl.oneDay);
 	res.setHeader('Content-Type', 'application/json');
 	manifest.behaviorHints.configurationRequired = false;
 	res.send(manifest);
 	res.end();
 });
 
-app.get('/:configuration?/:resource/:type/:id/:extra?.json', (req, res) => {
-	res.setHeader('Cache-Control', 'max-age=86400, public');
+app.get('/:configuration?/subtitles/:type/:id/:extra?.json', async(req, res) => {
+	
+	try{
 	res.setHeader('Content-Type', 'application/json');
 
 	console.log(req.params);
-	var { configuration, resource, type, id } = req.params;
+	var { configuration, type, id } = req.params;
 
-	if (configuration !== "subtitles" && configuration) {
+	if (configuration && languages[configuration]) {
 		let lang = configuration;
-		if (languages[lang]) {
-			subtitles(type, id, lang).then(subtitles => {
-				//console.log('subtitles', subtitles)
-				res.send(JSON.stringify({ subtitles: subtitles }));
-				res.end();
-			}).catch(error => { console.error(error); res.end(); })
-		} else {
-			res.end();
-		}
-	}
+			const subs = await subtitles(type, id, lang)
+			if(subs){
+				res.setHeader('Cache-Control', CacheControl.oneHour);
+				res.send(JSON.stringify({ subtitles: subs }));
+			} else throw "no subs"
+
+		} else throw "no config"
+		
+}catch(e){
+	res.setHeader('Cache-Control', CacheControl.off);
+	console.error(e);
+	res.end({ subtitles: [] });
+}
 })
 
 /*
@@ -97,6 +112,7 @@ app.get('/:subtitles/:name/:language/:id/:episode?\.:extension?', limiter, (req,
 	}
 });
 */
+
 const sub2vtt = require('sub2vtt');
 app.get('/sub.vtt', async (req, res,next) => {
 	try {
@@ -119,6 +135,7 @@ app.get('/sub.vtt', async (req, res,next) => {
 		
 		if (!file?.subtitle?.length) throw file.status
 
+		res.setHeader('Cache-Control', CacheControl.oneDay);
 		res.setHeader('Content-Type', 'text/vtt;charset=UTF-8');
 		res.send(file.subtitle);
 		res.end;
