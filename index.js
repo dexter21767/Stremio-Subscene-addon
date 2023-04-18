@@ -89,7 +89,7 @@ app.get('/:configuration?/subtitles/:type/:id/:extra?.json', async(req, res) => 
 }catch(e){
 	res.setHeader('Cache-Control', CacheControl.off);
 	console.error(e);
-	res.end({ subtitles: [] });
+	res.send({ subtitles: [] });
 }
 })
 
