@@ -13,8 +13,8 @@ var config = {
 
 switch (env) {
     case 'beamup':
-		config.port = process.env.PORT
-        config.local = "https://2ecbbd610840-subscene.baby-beamup.club"
+		config.port = process.env.PORT || 63555
+        config.local = process.env.PRE_URL || "https://2ecbbd610840-subscene.baby-beamup.club";
         break;
 
     case 'local':
