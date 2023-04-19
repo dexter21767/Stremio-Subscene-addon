@@ -90,6 +90,8 @@ async function subtitle(url = String) {
     if (res.body.includes("To many request")) throw "Too Many Request";
     let results = []
     let body = parse(res.body)
+    let imdb_id = res.body.split("href=\"https://www.imdb.com/title/")[1].split("\">Imdb</a>")[0];
+    let year = body.querySelector("#content > div.subtitles.byFilm > div.box.clearfix > div.top.left > div > ul > li:nth-child(1)").innerHTML.match(/[0-9]+/gi)[0];// alternative if dont want to always repeat search with year
     let table = body.querySelectorAll('table tbody tr')
     for (let i = 0;i<table.length;i++){
       let row = table[i];
@@ -106,7 +108,9 @@ async function subtitle(url = String) {
           title: title || "no title found",
           lang: lang || "notSp",
           hi: hi,
-          sdh: sdh
+          sdh: sdh,
+          imdb_id : imdb_id,
+          year : year // bring it to front
         })
       }
     } 
