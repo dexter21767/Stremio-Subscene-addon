@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+require('dotenv').config()
 const app = require('./index.js')
 const config = require('./config.js');
 

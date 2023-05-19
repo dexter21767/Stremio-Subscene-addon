@@ -26,8 +26,9 @@ async function getMeta(type, id) {
         let res = await request(url);
         console.log(res.data.title)
         let title = res.data.original_title.match(/[\u3400-\u9FBF]/) ? res.data.title : res.data.original_title;
+        let year = res.data.release_date.split("-")[0]
         var slug = slugify(title, { replacement: '-', remove: undefined, lower: true, strict: true, trim: true });
-        return { title: title, slug: slug }
+        return { title: title, slug: slug, year: year }
     } else if (type == "series") {
         let url = `${BaseURL}/find/${id}?api_key=${process.env.API_KEY}&external_source=imdb_id`
         let res = await request(url);

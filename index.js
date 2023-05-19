@@ -23,7 +23,9 @@ app.use(swStats.getMiddleware({
 }))
 
 app.use((req, res, next) => {
-    req.setTimeout(15 * 1000); // timeout time
+	console.log("reqpath : ", req.path)
+    req.setTimeout(60 * 1000); // timeout time
+	//long timeout, still give time to cache subs, next play will load from cache
     req.socket.removeAllListeners('timeout'); 
     req.socket.once('timeout', () => {
         req.timedout = true;
@@ -89,7 +91,7 @@ app.get('/:configuration?/subtitles/:type/:id/:extra?.json', async(req, res) => 
 }catch(e){
 	res.setHeader('Cache-Control', CacheControl.off);
 	console.error(e);
-	res.end({ subtitles: [] });
+	res.send({ subtitles: [] });
 }
 })
 
@@ -117,19 +119,20 @@ const sub2vtt = require('sub2vtt');
 app.get('/sub.vtt', async (req, res,next) => {
 	try {
 
-		let url,proxy;
+		let url,proxy,episode;
 		
 		if (req?.query?.proxy) proxy = JSON.parse(Buffer.from(req.query.proxy, 'base64').toString());
 		if (req?.query?.from) url = req.query.from
 		else throw 'error: no url';
+		if (req?.query?.episode) episode = req.query.episode
+
 		proxy =  {responseType: "buffer", "user-agent": 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko)  Safari/537.36'}
-		console.log(url);
 
 		url = await downloadUrl(url);
 
-		console.log("url", url,"proxy",proxy)
+		console.log({url,proxy,episode})
 		
-		let sub = new sub2vtt(url ,proxy);
+		let sub = new sub2vtt(url ,proxy,episode);
 		
 		let file = await sub.getSubtitle();
 		

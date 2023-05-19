@@ -83,11 +83,15 @@ async function subtitle(url = String) {
 
 async function subtitle(url = String) {
   try {
+    console.log(url)
     if (!url.length) throw "Path Not Specified"
     var res = await got.get(baseUrl+url,{retry:{limit:5}})
     if (!res||!res.body)throw "No Response Found"
+    if (res.body.includes("To many request")) throw "Too Many Request";
     let results = []
     let body = parse(res.body)
+    let imdb_id = res.body.split("href=\"https://www.imdb.com/title/")[1].split("\">Imdb</a>")[0];
+    let year = body.querySelector("#content > div.subtitles.byFilm > div.box.clearfix > div.top.left > div > ul > li:nth-child(1)").innerHTML.match(/[0-9]+/gi)[0];// alternative if dont want to always repeat search with year
     let table = body.querySelectorAll('table tbody tr')
     for (let i = 0;i<table.length;i++){
       let row = table[i];
@@ -104,53 +108,56 @@ async function subtitle(url = String) {
           title: title || "no title found",
           lang: lang || "notSp",
           hi: hi,
-          sdh: sdh
+          sdh: sdh,
+          imdb_id : imdb_id,
+          year : year // bring it to front
         })
       }
     } 
-    results = sortByLang(results)
-    //console.log("results",results["english"])
-    return results || null
-  } catch (e) {
-    throw e
+    //results = sortByLang(results) // sort happen after this function
+      //console.log("results",results["english"])
+      return results || null
+    } catch (e) {
+      throw e
+    }
   }
-}
-
-
-function sortByLang(subs = Array) {
-  try {
-    let sorted = {}
-    subs.map((e,
-      i)=> {
-      if (sorted[e.lang.toLowerCase()]) {
-        sorted[e.lang.toLowerCase()].push(e)
-      } else {
-        sorted[e.lang.toLowerCase()] = [e]
-      }
-    })
-    return sorted
-  }catch(err) {
-    return null
+  
+  
+  function sortByLang(subs = Array) {
+    try {
+      let sorted = {}
+      subs.map((e,
+        i)=> {
+        if (sorted[e.lang.toLowerCase()]) {
+          sorted[e.lang.toLowerCase()].push(e)
+        } else {
+          sorted[e.lang.toLowerCase()] = [e]
+        }
+      })
+      return sorted
+    }catch(err) {
+      return null
+    }
   }
-}
-
-async function downloadUrl(url = String) {
-  try {
-    let res = await got.get(url,{retry:{limit:5}})
-    if (!res||!res.body)throw "No Data Found"
-    let $ = cheerio.load(res.body),
-    downUrl
-    $("#downloadButton").map((i, e)=> {
-      downUrl = e.attribs.href
-    })
-    if (!downUrl)throw "Unexpected Error"
-    return baseUrl + downUrl;
-
-  } catch (e) {
-    throw e
+  
+  async function downloadUrl(url = String) {
+    try {
+      let res = await got.get(url,{retry:{limit:5}})
+      if (!res||!res.body)throw "No Data Found"
+      let $ = cheerio.load(res.body),
+      downUrl
+      $("#downloadButton").map((i, e)=> {
+        downUrl = e.attribs.href
+      })
+      if (!downUrl)throw "Unexpected Error"
+      return baseUrl + downUrl;
+  
+    } catch (e) {
+      throw e
+    }
   }
-}
 
 module.exports.search = search
 module.exports.getSubtitles = subtitle
 module.exports.downloadUrl = downloadUrl
+module.exports.sortByLang = sortByLang;

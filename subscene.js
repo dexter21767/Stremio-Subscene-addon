@@ -7,6 +7,7 @@ const languages = require('./languages.json');
 const count = 10;
 const NodeCache = require("node-cache");
 const sub2vtt = require('sub2vtt');
+const { forEach } = require('sub2vtt/ISO639');
 
 
 const Cache = new NodeCache({ stdTTL: (0.5 * 60 * 60), checkperiod: (1 * 60 * 60) });
@@ -74,165 +75,201 @@ async function TMDB(type, id, lang) {
     if(meta){
     console.log("meta",meta)
     if (type == "movie") {
-        let moviePath = `/subtitles/${meta.slug}/`;
-        console.log(moviePath);
+      let moviePath = `/subtitles/${meta.slug}`;
+      console.log(moviePath);
 
-        return getsubtitles(moviePath, id, lang)
+      return getsubtitles(moviePath, id, lang, null, meta.year)
     }
     else if (type == "series") {
-        let season = parseInt(id.split(':')[1]);
-        season = ordinalInWord(season);
-        const episode = id.split(':')[2];
-        const searchID = `${metaid}_${id.split(':')[1]}`;
-        let search = searchCache.get(searchID);
-        if (!search) {
-            search = await subscene.search(`${meta.title} ${season} season`);
-            if (search) {
-                searchCache.set(searchID, search);
-            }
+      let season = parseInt(id.split(':')[1]);
+      season = ordinalInWord(season);
+      const episode = id.split(':')[2];
+      const searchID = `${metaid}_${id.split(':')[1]}`;
+      let search = searchCache.get(searchID);
+      if (!search) {
+        search = await subscene.search(`${meta.title} ${season} season`);
+        if (search) {
+          searchCache.set(searchID, search);
         }
-        let moviePath = search[0].path;
-        return getsubtitles(moviePath, id.split(":")[0] + '_season_' + id.split(":")[1], lang, episode)
-        /*
-        var moviePath = '/subtitles/' + meta.slug + '-' + season + '-season';
-        let subtitles = await subscene.getSubtitles(moviePath).catch(error => { console.error(error) })
-        console.log('subtitles', Object.keys(subtitles).length)
-        if (!Object.keys(subtitles).length) {
-            moviePath = '/subtitles/' + meta.slug;
-        }
-        if(meta.slug=='the-100'){
-            moviePath = `/subtitles/the-100-the-hundred-${season}-season`;
-        }
-        console.log(moviePath);
-        return await sleep(2000).then(() => { return getsubtitles(moviePath, id.split(":")[0] + '_season_' + id.split(":")[1], lang, episode) })
-        function sleep(ms) {
-            return new Promise((resolve) => {
-                setTimeout(resolve, ms);
-            });
-        }*/
-        }
+      }
+      let moviePath = search[0].path;
+      return getsubtitles(moviePath, id.split(":")[0] + '_season_' + id.split(":")[1], lang, episode)
+      /*
+      var moviePath = '/subtitles/' + meta.slug + '-' + season + '-season';
+      let subtitles = await subscene.getSubtitles(moviePath).catch(error => { console.error(error) })
+      console.log('subtitles', Object.keys(subtitles).length)
+      if (!Object.keys(subtitles).length) {
+          moviePath = '/subtitles/' + meta.slug;
+      }
+      if(meta.slug=='the-100'){
+          moviePath = `/subtitles/the-100-the-hundred-${season}-season`;
+      }
+      console.log(moviePath);
+      return await sleep(2000).then(() => { return getsubtitles(moviePath, id.split(":")[0] + '_season_' + id.split(":")[1], lang, episode) })
+      function sleep(ms) {
+          return new Promise((resolve) => {
+              setTimeout(resolve, ms);
+          });
+      }*/
     }
+  }
 }
 
 
-async function getsubtitles(moviePath, id, lang, episode) {
-    console.log(moviePath, id, lang, episode)
-    const cachID = `${id}_${lang}`;
-    let cached = Cache.get(cachID);
-    if (cached) {
-        console.log('cached main', cachID, cached);
-        return cached
-    } else {
-        let subs = [];
-        console.log(moviePath)
+async function getsubtitles(moviePath, id, lang, episode, year) {
+  let breakTitle = moviePath.match(/[a-z]+/gi)
+  //console.log("breakTitle : " , breakTitle)
+  console.log(moviePath, id, lang, year, episode)
+  const cachID = `${id}_${lang}`;
+  let cached = Cache.get(cachID);
+  if (cached) {
+    console.log('cached main', cachID, cached);
+    return cached
+  } else {
+    let subs = [];
+    console.log(moviePath)
 
-        var subtitles = subsceneCache.get(moviePath);
-        if (!subtitles) {
-            subtitles = await subscene.getSubtitles(moviePath).catch(error => { console.error(error) })
-            if (subtitles) {
-                subsceneCache.set(moviePath, subtitles);
+    var subtitles = subsceneCache.get(moviePath);
+    if (!subtitles) {
+      let subs1 = await subscene.getSubtitles(moviePath).catch(error => { console.error(error) }) // moviepath without year
+      console.log("no year scraping :", subs1.length)
+      if (subs1[0].year !== year && !episode) { // if a movie and year isnt matched with the one in imdb
+        await new Promise((r) => setTimeout(r, 2000)); // prevent too many request, still finding the other way
+        let subs2 = await subscene.getSubtitles(moviePath + "-" + year).catch(error => { console.error(error) }) // moviepath with year
+        console.log("with year scraping :", subs2.length)
+        subs1 = subs1.concat(subs2);
+      }
+      subtitles = subscene.sortByLang(subs1)
+      if (subtitles) {
+        subsceneCache.set(moviePath, subtitles);
+      }
+    }
+    //console.log('subtitles', Object.keys(subtitles).length)
+    //console.log('subtitles', moviePath)
+    if (subtitles[lang]) {
+      subtitles = subtitles[lang];
+      console.log('subtitles matched lang : ',subtitles.length)
+      let sub = [];
+      let episodeText;
+      if (episode) {
+        episodeText = (episode.length == 1) ? ('0' + episode) : episode;
+        episodeText = 'E' + episodeText
+        console.log('episode', episodeText)
+        subtitles.forEach(element => {
+          if (element.title.match(/S\d\d\w\d/gi)) {
+            
+            var reg = new RegExp(episodeText.toLowerCase(), 'gi');
+            if (reg.test(element.title.toLowerCase())) {
+              console.log(element.title);
+                sub.push(element);
             }
-        }
-        console.log('subtitles', Object.keys(subtitles).length)
-        console.log('subtitles', moviePath)
-        if (subtitles[lang]) {
-            subtitles = subtitles[lang];
-            //console.log('subtitles',subtitles)
-            let sub;
+          } else {
+            console.log(element.title);
+            sub.push(element)
+          }
+        })
+        
+        //sub = filtered(subtitles, 'title', episodeText)
+        //episodeText = episode.length == 1 ? '0' + episode : episode;
+        //sub = sub.concat(filtered(subtitles, 'title', episodeText))
+        sub = [...new Set(sub)];
+        subtitles = sub;
+      }
+      console.log("filtered subs ", subtitles.length)
+      for (let i = 0; i < (subtitles.length); i++) {
+        let value = subtitles[i];
+        let simpleTitle = subtitles[i].title;
+        breakTitle.forEach(el => {
+        var regEx = new RegExp(el, "ig");
+          simpleTitle = simpleTitle.replace(regEx,"")
+        })
+        simpleTitle = simpleTitle.replace(/\W/gi,"") // kasih gambaran di stremio
+        if (value) {
+            let path = config.BaseURL + value.path;
             if (episode) {
-                let episodeText = (episode.length == 1) ? ('0' + episode) : episode;
-                episodeText = 'E' + episodeText
-                console.log('episode', episodeText)
-                sub = filtered(subtitles, 'title', episodeText)
-                episodeText = episode.length == 1 ? '0' + episode : episode;
-                sub = sub.concat(filtered(subtitles, 'title', episodeText))
-                sub = [...new Set(sub)];
-
+              url = config.local+"/sub.vtt?"+"episode="+episodeText+"&"+sub2vtt.gerenateUrl(path);
+            } else {
+              url = config.local+"/sub.vtt?"+sub2vtt.gerenateUrl(path);
             }
-            if (sub) {
-                subtitles = sub;
-            }
-            for (let i = 0; i < (count || subtitles.length); i++) {
-                let value = subtitles[i];
-                if (value) {
-                    let path = config.BaseURL + value.path;
-                    url = config.local+"/sub.vtt?"+sub2vtt.gerenateUrl(path);
-                    subs.push({
-                        lang: languages[lang].iso || languages[lang].id,
-                        id: episode?`${cachID}_ep${episode}_${i}`:`${cachID}_${i}`,
-                        url: url
-                    });
-                }
-            }
-            let cached = Cache.set(cachID, subs);
-            console.log("cached", cached)
-            return subs;
-        }else{
-            return
+            
+            subs.push({
+                lang: languages[lang].iso || languages[lang].id,
+                //id: "subscn_"+episode?`${cachID}_ep${episode}_${i}`:`${cachID}_${i}`,
+                title:subtitles[i].title,
+                id: "s."+`${i}`+"."+ simpleTitle,
+                url: url
+            });
         }
     }
+    let cached = Cache.set(cachID, subs);
+    console.log("cached", cached)
+    return subs;
+}else{
+    return
+}
+}
 }
 
 async function downloadUrl(path, episode) {
-    let cachID = episode ? path + '_' + episode : path;
-    let cached = filesCache.get(cachID);
-    if (cached) {
-        console.log('File already cached', cachID);
-        return cached
-    } else {
-        return subscene.downloadUrl(path).then(url => {
-            let cached = filesCache.set(cachID, url);
-            console.log("Caching File", cached)
-            return url;
-        }).catch(error => { console.log(error) });
-    }
+let cachID = episode ? path + '_' + episode : path;
+let cached = filesCache.get(cachID);
+if (cached) {
+console.log('File already cached', cachID);
+return cached
+} else {
+return subscene.downloadUrl(path).then(url => {
+    let cached = filesCache.set(cachID, url);
+    console.log("Caching File", cached)
+    return url;
+}).catch(error => { console.log(error) });
+}
 }
 
 
 function filtered(list, key, value) {
-    var filtered = [], i = list.length;
-    var reg = new RegExp(value.toLowerCase(), 'gi');
-    while (i--) {
-        if (reg.test(list[i][key].toLowerCase())) {
-            filtered.push(list[i]);
-        }
-    }
-    return filtered;
+var filtered = [], i = list.length;
+var reg = new RegExp(value.toLowerCase(), 'gi');
+while (i--) {
+if (reg.test(list[i][key].toLowerCase())) {
+    filtered.push(list[i]);
+}
+}
+return filtered;
 };
 
 function ordinalInWord(cardinal) {
-    const ordinals = ["zeroth", "First", "Second", "Third", "Fourth", "Fifth", "Sixth", "Seventh", "Eighth", "Ninth", "Tenth", "Eleventh", "Twelfth", "Thirteenth", "Fourteenth", "Fifteenth", "Sixteenth", "Seventeenth", "Eighteenth", "Nineteenth", "Twentieth"]
+const ordinals = ["zeroth", "First", "Second", "Third", "Fourth", "Fifth", "Sixth", "Seventh", "Eighth", "Ninth", "Tenth", "Eleventh", "Twelfth", "Thirteenth", "Fourteenth", "Fifteenth", "Sixteenth", "Seventeenth", "Eighteenth", "Nineteenth", "Twentieth"]
 
-    var tens = {
-        20: 'twenty',
-        30: 'thirty',
-        40: 'forty',
-        50: 'Fifty',
-        60: 'Sixty',
-        70: 'Seventy',
-        80: 'Eighty',
-        90: 'Ninety'
+var tens = {
+20: 'twenty',
+30: 'thirty',
+40: 'forty',
+50: 'Fifty',
+60: 'Sixty',
+70: 'Seventy',
+80: 'Eighty',
+90: 'Ninety'
 
-    };
-    var ordinalTens = {
-        30: 'thirtieth',
-        40: 'fortieth',
-        50: 'fiftieth',
-        60: 'Sixtieth',
-        70: 'Seventieth',
-        80: 'Eightieth',
-        90: 'Ninetieth'
-    };
+};
+var ordinalTens = {
+30: 'thirtieth',
+40: 'fortieth',
+50: 'fiftieth',
+60: 'Sixtieth',
+70: 'Seventieth',
+80: 'Eightieth',
+90: 'Ninetieth'
+};
 
-    if (cardinal <= 20) {
-        return ordinals[cardinal];
-    }
+if (cardinal <= 20) {
+return ordinals[cardinal];
+}
 
-    if (cardinal % 10 === 0) {
-        return ordinalTens[cardinal];
-    }
+if (cardinal % 10 === 0) {
+return ordinalTens[cardinal];
+}
 
-    return tens[cardinal - (cardinal % 10)] + ordinals[cardinal % 10];
+return tens[cardinal - (cardinal % 10)] + ordinals[cardinal % 10];
 }
 
 
